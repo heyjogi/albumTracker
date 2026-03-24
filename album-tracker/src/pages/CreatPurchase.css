@@ -1,0 +1,22 @@
+@reference "../index.css";
+.cp-wrapper { @apply flex flex-col min-h-screen bg-slate-200 p-4; }
+.cp-header { @apply flex items-center mb-6 pt-4; }
+.cp-back-btn { @apply p-2 bg-white rounded-full shadow text-brand-600 mr-4; }
+.cp-back-icon { @apply w-6 h-6; }
+.cp-title { @apply text-2xl font-bold text-slate-800; }
+.cp-card { @apply bg-white rounded-2xl shadow-sm p-6 space-y-5; }
+.cp-label { @apply block text-sm font-semibold text-slate-700 mb-2; }
+.cp-select-wrap { @apply relative; }
+.cp-select { @apply w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none bg-white appearance-none transition-colors; }
+.cp-select-icon { @apply pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400; }
+.cp-team-members { @apply mt-2 flex flex-wrap gap-1; }
+.cp-member-badge { @apply text-xs bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-medium; }
+.cp-empty-msg { @apply text-sm text-slate-400 px-1; }
+.cp-input-group { @apply flex gap-2; }
+.cp-input-half { @apply w-1/2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition-colors; }
+.cp-input-full { @apply w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition-colors; }
+.cp-row { @apply flex gap-4; }
+.cp-col-flex { @apply flex-1; }
+.cp-col-1-3 { @apply w-1/3; }
+.cp-submit-wrap { @apply pt-4; }
+.cp-submit-btn { @apply w-full py-4 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold rounded-xl shadow-md transition-colors disabled:cursor-not-allowed; }

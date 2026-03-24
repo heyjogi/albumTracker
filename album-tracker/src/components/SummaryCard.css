@@ -1,0 +1,18 @@
+@reference "../index.css";
+.sc-container { @apply space-y-6; }
+.sc-total-card { @apply bg-brand-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden; }
+.sc-total-content { @apply relative z-10; }
+.sc-total-label { @apply text-brand-100 font-medium mb-1 drop-shadow-sm; }
+.sc-total-value { @apply text-3xl font-bold tracking-tight; }
+.sc-deco-1 { @apply absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl; }
+.sc-deco-2 { @apply absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-brand-800 opacity-20 rounded-full blur-xl; }
+.sc-stats-card { @apply bg-white rounded-2xl p-6 shadow-sm border border-slate-100; }
+.sc-stats-header { @apply flex justify-between items-center mb-4; }
+.sc-stats-title { @apply font-bold text-slate-800; }
+.sc-stats-icon { @apply w-5 h-5 text-brand-600; }
+.sc-stats-list { @apply space-y-3; }
+.sc-stat-item { @apply flex items-center gap-3; }
+.sc-stat-name { @apply w-24 text-sm font-medium text-slate-600 truncate; }
+.sc-stat-bar-bg { @apply flex-1 h-2 bg-slate-100 rounded-full overflow-hidden; }
+.sc-stat-bar-fill { @apply h-full rounded-full; }
+.sc-stat-count { @apply w-6 text-right font-bold text-slate-800 text-sm; }

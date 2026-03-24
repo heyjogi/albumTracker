@@ -1,0 +1,34 @@
+@reference "../index.css";
+.pi-card { @apply bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between relative hover:shadow-md transition-shadow; }
+.pi-left-wrap { @apply flex items-center gap-4 flex-1 min-w-0; }
+.pi-img-pl { @apply w-16 h-16 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shrink-0; }
+.pi-img-text { @apply text-white text-xs text-center px-1 break-all opacity-50; }
+.pi-details { @apply min-w-0; }
+.pi-title { @apply font-bold text-slate-800 line-clamp-1; }
+.pi-tags { @apply flex items-center gap-2 mt-1 flex-wrap; }
+.pi-store { @apply text-xs font-medium text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md; }
+.pi-qty { @apply text-xs text-slate-500; }
+.pi-shipping { @apply text-xs font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md; }
+.pi-dday { @apply mt-1.5 inline-block text-xs font-bold px-2 py-0.5 rounded-md; }
+.pi-right-wrap { @apply flex items-center gap-2 shrink-0; }
+.pi-badges { @apply flex flex-col gap-1 items-end; }
+.pi-menu-btn { @apply p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50; }
+.pi-menu-icon { @apply w-5 h-5; }
+
+.pi-pop-wrap { @apply absolute right-4 top-16 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 z-10 overflow-hidden; }
+.pi-pop-header { @apply p-4 border-b border-slate-50 flex justify-between items-center; }
+.pi-pop-title { @apply font-semibold text-sm; }
+.pi-pop-close { @apply text-slate-400 hover:text-slate-600; }
+.pi-pop-content { @apply p-4 space-y-4; }
+.pi-toggle-row { @apply flex items-center justify-between; }
+.pi-toggle-label { @apply text-sm font-medium; }
+.pi-toggle-track { @apply w-12 h-6 rounded-full transition-colors relative; }
+.pi-toggle-track-active { @apply bg-brand-500; }
+.pi-toggle-track-inactive { @apply bg-slate-200; }
+.pi-toggle-knob { @apply absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform; }
+.pi-toggle-knob-active { @apply translate-x-6; }
+.pi-divider { @apply border-t border-slate-100 pt-3; }
+.pi-btn-del { @apply w-full py-2 rounded-xl text-sm font-semibold transition-colors; }
+.pi-btn-del-confirm { @apply bg-rose-500 text-white hover:bg-rose-600; }
+.pi-btn-del-normal { @apply bg-rose-50 text-rose-500 hover:bg-rose-100; }
+.pi-btn-cancel { @apply w-full mt-2 py-2 rounded-xl text-sm text-slate-400 hover:text-slate-600; }

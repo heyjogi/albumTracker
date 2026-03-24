@@ -1,0 +1,22 @@
+@reference "../index.css";
+.pl-empty-container { 
+    @apply mt-8 text-center p-8 bg-white/50 rounded-2xl border border-dashed border-brand-200; 
+}
+.pl-empty-title { 
+    @apply text-slate-500 mb-2; 
+}
+.pl-empty-subtitle { 
+    @apply text-sm text-slate-400; 
+}
+.pl-container { 
+    @apply mt-8 space-y-4 pb-20; 
+}
+.pl-header { 
+    @apply flex justify-between items-center mb-4; 
+}
+.pl-title { 
+    @apply text-lg font-bold text-slate-800; 
+}
+.pl-view-all { 
+    @apply text-brand-600 text-sm font-semibold hover:underline; 
+}

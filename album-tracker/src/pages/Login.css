@@ -1,0 +1,28 @@
+@reference "../index.css";
+.login-wrap {
+    @apply flex flex-col items-center justify-center min-h-screen p-4 bg-slate-200;
+}
+.login-card {
+    @apply w-full max-w-md p-8 bg-white rounded-2xl shadow-xl flex flex-col items-center;
+}
+.login-logo {
+    @apply w-16 h-16 bg-brand-600 rounded-xl mb-6 flex items-center justify-center;
+}
+.login-logo-text {
+    @apply text-white font-bold text-2xl;
+}
+.login-title {
+    @apply text-3xl font-bold text-slate-800 mb-2;
+}
+.login-desc {
+    @apply text-slate-500 mb-8 text-center;
+}
+.login-error {
+    @apply w-full mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm text-center;
+}
+.login-btn {
+    @apply w-full py-4 px-6 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-md transition-colors duration-200 flex items-center justify-center gap-3;
+}
+.login-btn-icon {
+    @apply w-6 h-6 bg-white rounded-full p-1;
+}

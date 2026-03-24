@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import './CreatPurchase.css'
 
 export default function CreatePurchase() {
     const { user, profile } = useAuth()
@@ -147,53 +148,53 @@ export default function CreatePurchase() {
         }
     }
 
-    const selectClass = "w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none bg-white appearance-none"
-    const inputClass = "w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none"
+    const selectClass = "cp-select"
+    const inputClass = "cp-input-full"
 
     return (
-        <div className="flex flex-col min-h-screen bg-slate-200 p-4">
-            <header className="flex items-center mb-6 pt-4">
-                <button onClick={() => navigate('/')} className="p-2 bg-white rounded-full shadow text-brand-600 mr-4">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="cp-wrapper">
+            <header className="cp-header">
+                <button onClick={() => navigate('/')} className="cp-back-btn">
+                    <svg className="cp-back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
-                <h1 className="text-2xl font-bold text-slate-800">새 구매내역 등록</h1>
+                <h1 className="cp-title">새 구매내역 등록</h1>
             </header>
 
-            <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
+            <div className="cp-card">
 
                 {/* 구매처 드롭다운 */}
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">구매처</label>
-                    <div className="relative">
+                    <label className="cp-label">구매처</label>
+                    <div className="cp-select-wrap">
                         <select className={selectClass} value={form.store_id} onChange={handleStoreChange}>
                             <option value="">구매처를 선택하세요</option>
                             {stores.map(s => (
                                 <option key={s.id} value={s.id}>{s.name}</option>
                             ))}
                         </select>
-                        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">▾</span>
+                        <span className="cp-select-icon">▾</span>
                     </div>
                 </div>
 
                 {/* 분철팀 드롭다운 */}
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">분철팀</label>
-                    <div className="relative">
+                    <label className="cp-label">분철팀</label>
+                    <div className="cp-select-wrap">
                         <select className={selectClass} value={form.team_id} onChange={handleTeamChange}>
                             <option value="">개인</option>
                             {teams.map(t => (
                                 <option key={t.id} value={t.id}>{t.name}</option>
                             ))}
                         </select>
-                        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">▾</span>
+                        <span className="cp-select-icon">▾</span>
                     </div>
                     {/* 팀 선택 시 멤버 표시 */}
                     {teamMembers.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
+                        <div className="cp-team-members">
                             {teamMembers.map(m => (
-                                <span key={m.id} className="text-xs bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-medium">
+                                <span key={m.id} className="cp-member-badge">
                                     {m.member_name} ×{m.quantity || 1}
                                 </span>
                             ))}
@@ -204,11 +205,11 @@ export default function CreatePurchase() {
                 {/* 앨범 선택 — 구매처 선택 후에만 표시 */}
                 {form.store_id && (
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">앨범</label>
+                        <label className="cp-label">앨범</label>
                         {albums.length === 0 ? (
-                            <p className="text-sm text-slate-400 px-1">등록된 앨범이 없습니다. 직접 입력해주세요.</p>
+                            <p className="cp-empty-msg">등록된 앨범이 없습니다. 직접 입력해주세요.</p>
                         ) : (
-                            <div className="relative">
+                            <div className="cp-select-wrap">
                                 <select className={selectClass} value={form.album_id} onChange={handleAlbumChange}>
                                     <option value="">앨범을 선택하세요</option>
                                     {albums.map(a => (
@@ -217,7 +218,7 @@ export default function CreatePurchase() {
                                         </option>
                                     ))}
                                 </select>
-                                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">▾</span>
+                                <span className="cp-select-icon">▾</span>
                             </div>
                         )}
                     </div>
@@ -225,19 +226,19 @@ export default function CreatePurchase() {
 
                 {/* 앨범명 / 이벤트명 직접 입력 (앨범 미선택시 또는 보정용) */}
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">앨범명 / 이벤트명</label>
-                    <div className="flex gap-2">
+                    <label className="cp-label">앨범명 / 이벤트명</label>
+                    <div className="cp-input-group">
                         <input
                             type="text"
                             placeholder="앨범명"
-                            className={`w-1/2 ${inputClass}`}
+                            className="cp-input-half"
                             value={form.album_name}
                             onChange={e => setForm({ ...form, album_name: e.target.value })}
                         />
                         <input
                             type="text"
                             placeholder="이벤트명"
-                            className={`w-1/2 ${inputClass}`}
+                            className="cp-input-half"
                             value={form.event_name}
                             onChange={e => setForm({ ...form, event_name: e.target.value })}
                         />
@@ -245,9 +246,9 @@ export default function CreatePurchase() {
                 </div>
 
                 {/* 가격 / 수량 */}
-                <div className="flex gap-4">
-                    <div className="flex-1">
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">가격 (원)</label>
+                <div className="cp-row">
+                    <div className="cp-col-flex">
+                        <label className="cp-label">가격 (원)</label>
                         <input
                             type="number"
                             className={inputClass}
@@ -255,8 +256,8 @@ export default function CreatePurchase() {
                             onChange={e => setForm({ ...form, price: e.target.value })}
                         />
                     </div>
-                    <div className="w-1/3">
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">수량</label>
+                    <div className="cp-col-1-3">
+                        <label className="cp-label">수량</label>
                         <input
                             type="number"
                             min="1"
@@ -267,11 +268,11 @@ export default function CreatePurchase() {
                     </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="cp-submit-wrap">
                     <button
                         onClick={submit}
                         disabled={loading || !form.store_name}
-                        className="w-full py-4 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold rounded-xl shadow-md transition-colors"
+                        className="cp-submit-btn"
                     >
                         {loading ? '등록 중...' : '등록하기'}
                     </button>

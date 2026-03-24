@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import './NicknameSetup.css'
 
 export default function NicknameSetup() {
     const { user, setProfile } = useAuth()
@@ -64,27 +65,27 @@ export default function NicknameSetup() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-200">
-            <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
-                <h1 className="text-2xl font-bold text-slate-800 mb-2">닉네임 설정</h1>
-                <p className="text-slate-500 mb-6 font-medium">서비스에서 사용할 닉네임을 입력해주세요.</p>
+        <div className="ns-wrapper">
+            <div className="ns-card">
+                <h1 className="ns-title">닉네임 설정</h1>
+                <p className="ns-subtitle">서비스에서 사용할 닉네임을 입력해주세요.</p>
                 
-                <div className="mb-6">
+                <div className="ns-input-wrap">
                     <input 
                         type="text"
                         value={nickname}
                         onChange={handleChange}
                         placeholder="닉네임 입력 (특수문자 제외)"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition-all"
+                        className="ns-input"
                         maxLength={15}
                     />
-                    {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+                    {error && <p className="ns-error">{error}</p>}
                 </div>
 
                 <button 
                     onClick={save}
                     disabled={loading || !!error || !nickname}
-                    className="w-full py-4 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow-md transition-colors"
+                    className="ns-btn"
                 >
                     {loading ? '저장 중...' : '시작하기'}
                 </button>

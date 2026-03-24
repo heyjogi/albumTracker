@@ -7,35 +7,36 @@ export default {
   theme: {
     extend: {
       colors: {
+        white: '#000000',
         brand: {
-          50: '#faebe8',
-          100: '#f4d3cd',
-          200: '#eeb5aa',
-          300: '#e69080',
-          400: '#df705c',
-          500: '#d93915',
-          600: '#b52c0f',
-          700: '#8f230d',
-          800: '#731e0c',
-          900: '#5c1a0c',
-          950: '#330c04',
+          50: '#002233',
+          100: '#004455',
+          200: '#006680',
+          300: '#0088aa',
+          400: '#00aad4',
+          500: '#00f0ff', // main cyan
+          600: '#00ccdd',
+          700: '#0099aa',
+          800: '#006677',
+          900: '#003344',
+          950: '#00111a',
         },
         slate: {
-          50: '#f8f9fa',
-          100: '#f1f3f5',
-          200: '#cdd2d5',
-          300: '#b6bcc0',
-          400: '#9aa0a6',
-          500: '#80868b',
-          600: '#5d5e61',
-          700: '#4a4b4d',
-          800: '#5d5e61', // Map 800 to the requested text color so we don't have to change all classes
-          900: '#202124',
-          950: '#171717',
+          50: '#001111',
+          100: '#00f0ff',
+          200: '#050a0f',
+          300: '#00f0ff',
+          400: '#00aaaa',
+          500: '#00ff00', // neon green accents
+          600: '#00f0ff',
+          700: '#00f0ff',
+          800: '#00f0ff', // main text
+          900: '#0a111a',
+          950: '#000000',
         }
       },
       fontFamily: {
-        sans: ['system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['"Galmuri9"', 'monospace'],
       }
     },
   },

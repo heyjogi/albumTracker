@@ -1,0 +1,9 @@
+@reference "../index.css";
+/* AuthWrapper.css */
+.aw-loading-container {
+    @apply flex min-h-screen items-center justify-center bg-slate-200;
+}
+
+.aw-loading-spinner {
+    @apply animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600;
+}
