@@ -19,14 +19,12 @@ export default function PurchaseList({ list, refresh, limit }) {
         <div className="pl-container">
             <div className="pl-header">
                 <h2 className="pl-title">진행 중인 분철/구매</h2>
-                {limit && limit < list.length && (
-                    <button className="pl-view-all" onClick={() => navigate('/purchases')}>
-                        전체 보기 →
-                    </button>
+                {limit && (
+                    <button className="pl-view-all" onClick={() => navigate('/purchases')}>전체 보기 →</button>
                 )}
             </div>
-            {displayedList.map(v => (
-                <PurchaseItem key={v.id} item={v} refresh={refresh} />
+            {displayedList.map((v, idx) => (
+                <PurchaseItem key={v.internal_purchase_id || v.public_purchase_id || idx} item={v} refresh={refresh} />
             ))}
         </div>
     )

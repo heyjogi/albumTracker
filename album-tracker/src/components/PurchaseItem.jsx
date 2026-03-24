@@ -38,11 +38,7 @@ export default function PurchaseItem({ item, refresh }) {
         if (isMenuOpen && menuBtnRef.current) {
             const rect = menuBtnRef.current.getBoundingClientRect()
             const spaceBelow = window.innerHeight - rect.bottom
-            if (spaceBelow < 280) {
-                setPopPosition('top')
-            } else {
-                setPopPosition('bottom')
-            }
+            setPopPosition(spaceBelow < 280 ? 'top' : 'bottom')
         }
     }, [isMenuOpen])
 
@@ -52,17 +48,35 @@ export default function PurchaseItem({ item, refresh }) {
     const dday = getDday(item.event_end_at)
 
     const toggleSettled = async () => {
+        const idToUpdate = item.internal_purchase_id
+        if (!idToUpdate) return
         setLoading(true)
-        await supabase.from('purchases').update({ is_settled: !item.is_settled }).eq('id', item.id)
-        setLoading(false)
-        refresh()
+        try {
+            await supabase.from('purchases')
+                .update({ is_settled: !item.is_settled })
+                .eq('id', idToUpdate)
+            refresh()
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const toggleReceived = async () => {
+        const idToUpdate = item.internal_purchase_id
+        if (!idToUpdate) return
         setLoading(true)
-        await supabase.from('purchases').update({ received: !item.received }).eq('id', item.id)
-        setLoading(false)
-        refresh()
+        try {
+            await supabase.from('purchases')
+                .update({ received: !item.received })
+                .eq('id', idToUpdate)
+            refresh()
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const handleDelete = async () => {
@@ -70,25 +84,40 @@ export default function PurchaseItem({ item, refresh }) {
             setConfirmDelete(true)
             return
         }
+        const idToUpdate = item.internal_purchase_id
+        if (!idToUpdate) return
         setLoading(true)
-        await supabase.from('purchases').delete().eq('id', item.id)
-        setLoading(false)
-        refresh()
+        try {
+            await supabase.from('purchases')
+                .delete()
+                .eq('id', idToUpdate)
+            refresh()
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoading(false)
+        }
     }
+
+    const isPersonal = !item.public_team_id
 
     return (
         <div className="pi-card">
             <div className="pi-left-wrap">
-                <div className="pi-img-pl">
-                    {item.event_image_url ? (
-                        <img
-                            src={item.event_image_url}
-                            alt={albumName}
-                            className="pi-img-photo"
-                        />
-                    ) : (
-                        <span className="pi-img-text">IMAGE</span>
-                    )}
+                <div className="pi-member-group">
+                    {/* 1. 이미지 영역 */}
+                    <div className="pi-img-pl">
+                        {item.event_image_url ? (
+                            <img src={item.event_image_url} alt={albumName} className="pi-img-photo" />
+                        ) : (
+                            <span className="pi-img-placeholder">
+                                {item.member_name ? item.member_name.charAt(0) : '?'}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* 2. 멤버 이름 (이미지 밑으로 이동) */}
+                    <span className="pi-member-name">{item.member_name}</span>
                 </div>
                 <div className="pi-details">
                     <h3 className="pi-title">{albumName} {eventName}</h3>
@@ -100,7 +129,7 @@ export default function PurchaseItem({ item, refresh }) {
                         {item.shipping_fee > 0 && (
                             <>
                                 <span className="pi-dot">·</span>
-                                <span className="pi-shipping">배송비 {(item.team_id ? Math.floor(item.shipping_fee / 5) : item.shipping_fee).toLocaleString()}원</span>
+                                <span className="pi-shipping">배송비 {item.shipping_fee.toLocaleString()}원</span>
                             </>
                         )}
                     </div>
@@ -109,11 +138,7 @@ export default function PurchaseItem({ item, refresh }) {
                             응모마감 | {formatEndDate(item.event_end_at)}
                         </div>
                     )}
-                    {dday && (
-                        <span className={`pi-dday ${dday.color}`}>
-                            {dday.label}
-                        </span>
-                    )}
+                    {dday && <span className={`pi-dday ${dday.color}`}>{dday.label}</span>}
                 </div>
             </div>
 
@@ -122,64 +147,57 @@ export default function PurchaseItem({ item, refresh }) {
                     <StatusBadge type="settle" status={item.is_settled} label={item.is_settled ? '정산 완료' : '정산 대기'} />
                     <StatusBadge type="receive" status={item.received} label={item.received ? '수령 완료' : '주문 완료'} />
                 </div>
-                <button
-                    ref={menuBtnRef}
-                    onClick={() => { setIsMenuOpen(!isMenuOpen); setConfirmDelete(false) }}
-                    className="pi-menu-btn"
-                >
+                <button ref={menuBtnRef} onClick={() => { setIsMenuOpen(!isMenuOpen); setConfirmDelete(false) }} className="pi-menu-btn">
                     <svg className="pi-menu-icon" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                     </svg>
                 </button>
             </div>
 
-            {isMenuOpen && (
-                <div className={`pi-pop-wrap ${popPosition === 'top' ? 'pi-pop-top' : 'pi-pop-bottom'}`}>
-                    <div className="pi-pop-header">
-                        <span className="pi-pop-title">상태 관리</span>
-                        <button onClick={() => { setIsMenuOpen(false); setConfirmDelete(false) }} className="pi-pop-close">×</button>
-                    </div>
-                    <div className="pi-pop-content">
-                        <div className="pi-toggle-row">
-                            <span className="pi-toggle-label">정산 여부</span>
-                            <button
-                                disabled={loading}
-                                onClick={toggleSettled}
-                                className={`pi-toggle-track ${item.is_settled ? 'pi-toggle-track-active' : 'pi-toggle-track-inactive'}`}
-                            >
-                                <span className={`pi-toggle-knob ${item.is_settled ? 'pi-toggle-knob-active' : ''}`} />
-                            </button>
+            {
+                isMenuOpen && (
+                    <div className={`pi-pop-wrap ${popPosition === 'top' ? 'pi-pop-top' : 'pi-pop-bottom'}`}>
+                        <div className="pi-pop-header">
+                            <span className="pi-pop-title">상태 관리</span>
+                            <button onClick={() => { setIsMenuOpen(false); setConfirmDelete(false) }} className="pi-pop-close">×</button>
                         </div>
-                        <div className="pi-toggle-row">
-                            <span className="pi-toggle-label">수령 여부</span>
-                            <button
-                                disabled={loading}
-                                onClick={toggleReceived}
-                                className={`pi-toggle-track ${item.received ? 'pi-toggle-track-active' : 'pi-toggle-track-inactive'}`}
-                            >
-                                <span className={`pi-toggle-knob ${item.received ? 'pi-toggle-knob-active' : ''}`} />
-                            </button>
-                        </div>
-                        <div className="pi-divider">
-                            <button
-                                disabled={loading}
-                                onClick={handleDelete}
-                                className={`pi-btn-del ${confirmDelete ? 'pi-btn-del-confirm' : 'pi-btn-del-normal'}`}
-                            >
-                                {confirmDelete ? '정말 삭제할까요?\n탭하면 삭제됩니다' : '🗑 구매내역 삭제'}
-                            </button>
-                            {confirmDelete && (
+                        <div className="pi-pop-content">
+                            <div className="pi-toggle-row">
+                                <span className="pi-toggle-label">정산 여부</span>
                                 <button
-                                    onClick={() => setConfirmDelete(false)}
-                                    className="pi-btn-cancel"
+                                    disabled={loading}
+                                    onClick={toggleSettled}
+                                    className={`pi-toggle-track ${item.is_settled ? 'pi-toggle-track-active' : 'pi-toggle-track-inactive'}`}
                                 >
-                                    취소
+                                    <span className={`pi-toggle-knob ${item.is_settled ? 'pi-toggle-knob-active' : ''}`} />
                                 </button>
-                            )}
+                            </div>
+                            <div className="pi-toggle-row">
+                                <span className="pi-toggle-label">수령 여부</span>
+                                <button
+                                    disabled={loading}
+                                    onClick={toggleReceived}
+                                    className={`pi-toggle-track ${item.received ? 'pi-toggle-track-active' : 'pi-toggle-track-inactive'}`}
+                                >
+                                    <span className={`pi-toggle-knob ${item.received ? 'pi-toggle-knob-active' : ''}`} />
+                                </button>
+                            </div>
+                            <div className="pi-divider">
+                                <button
+                                    disabled={loading}
+                                    onClick={handleDelete}
+                                    className={`pi-btn-del ${confirmDelete ? 'pi-btn-del-confirm' : 'pi-btn-del-normal'}`}
+                                >
+                                    {confirmDelete ? '정말 삭제할까요?\n탭하면 삭제됩니다' : '🗑 구매내역 삭제'}
+                                </button>
+                                {confirmDelete && (
+                                    <button onClick={() => setConfirmDelete(false)} className="pi-btn-cancel">취소</button>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }

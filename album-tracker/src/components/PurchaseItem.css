@@ -5,23 +5,48 @@
 }
 
 .pi-left-wrap {
-    @apply flex items-center gap-4 flex-1 min-w-0;
+    @apply flex items-center gap-3 flex-1 min-w-0;
+}
+
+.pi-member-group {
+    @apply flex flex-col items-center gap-1 shrink-0;
+    /* 세로 정렬, 중앙 정렬 */
+    width: 56px;
+    /* 이미지 너비에 맞춰 고정 */
 }
 
 .pi-img-pl {
-    @apply w-13 h-20 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shrink-0 object-cover;
+    @apply w-13 h-20 bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center shrink-0;
+    position: relative;
 }
 
 .pi-img-photo {
-    @apply w-full h-full object-cover;
+    @apply w-full h-full object-cover block;
 }
 
-.pi-img-text {
-    @apply text-white text-xs text-center px-1 break-all opacity-50;
+.pi-img-placeholder {
+    @apply w-full h-full flex items-center justify-center text-xl font-bold;
+    background: linear-gradient(135deg, theme('colors.brand.100'), theme('colors.brand.200'));
+    color: theme('colors.brand.600');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pi-member-name {
+    @apply text-xs font-bold text-slate-700 shrink-0 text-center;
+    white-space: nowrap;
+    /* 글자가 꺾이지 않게 */
+    width: 100%;
+    /* 그룹 내 너비 꽉 채우기 */
+    overflow: hidden;
+    /* 혹시 이름이 길면 줄바꿈 방지 */
+    text-overflow: ellipsis;
+    /* ... 처리 */
 }
 
 .pi-details {
-    @apply min-w-0;
+    @apply min-w-0 flex-1;
 }
 
 .pi-title {
@@ -37,11 +62,12 @@
 }
 
 .pi-meta {
-    @apply flex items-center gap-1.5 mt-1.5 text-xs text-slate-500;
+    @apply flex items-center gap-1.5 mt-1.5 text-[11px] text-slate-500;
+    white-space: nowrap;
 }
 
 .pi-qty {
-    @apply font-medium;
+    @apply font-medium shrink-0;
 }
 
 .pi-dot {
@@ -49,7 +75,7 @@
 }
 
 .pi-shipping {
-    @apply font-medium;
+    @apply font-medium shrink-0;
 }
 
 .pi-dday {
@@ -61,7 +87,7 @@
 }
 
 .pi-badges {
-    @apply flex flex-col gap-1 items-end;
+    @apply flex flex-col gap-3 items-end;
 }
 
 .pi-menu-btn {

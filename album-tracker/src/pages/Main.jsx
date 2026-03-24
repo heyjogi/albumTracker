@@ -7,24 +7,21 @@ import { useAuth } from '../hooks/useAuth'
 import './Main.css'
 
 export default function Main() {
-    const { user, profile } = useAuth()
+    const { profile } = useAuth()
     const navigate = useNavigate()
     const [list, setList] = useState([])
 
     const fetchData = async () => {
-        if (!user) return
         const { data } = await supabase
-            .from('purchases')
+            .from('safe_purchases')
             .select('*')
-            .eq('user_id', user.id)
             .order('created_at', { ascending: false })
-
         setList(data || [])
     }
 
     useEffect(() => {
         fetchData()
-    }, [user])
+    }, [])
 
     return (
         <div className="main-wrapper">
@@ -33,9 +30,9 @@ export default function Main() {
                     <img src="/logo.svg" alt="Logo" className="w-8 h-8 rounded" />
                     <h1 className="main-logo">AlbumTracker.</h1>
                 </div>
-                <div className="main-avatar">
+                {/* <div className="main-avatar">
                     {profile?.nickname ? profile.nickname.charAt(0).toUpperCase() : 'U'}
-                </div>
+                </div> */}
             </header>
 
             <main className="main-content">
@@ -60,3 +57,4 @@ export default function Main() {
         </div>
     )
 }
+

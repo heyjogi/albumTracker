@@ -8,12 +8,10 @@ export default function SummaryCard({ list }) {
         return acc + (curr.price * curr.quantity) + itemShipping
     }, 0)
 
-    // Aggregate by album_name
     const albumCounts = {}
     list.forEach(v => {
         const name = v.album_name || '기타'
-        if (!albumCounts[name]) albumCounts[name] = 0
-        albumCounts[name] += v.quantity
+        albumCounts[name] = (albumCounts[name] || 0) + v.quantity
     })
 
     const sortedAlbums = Object.entries(albumCounts).sort((a, b) => b[1] - a[1]).slice(0, 3)
@@ -21,25 +19,22 @@ export default function SummaryCard({ list }) {
 
     return (
         <div className="sc-container">
-            {/* 총 지출 금액 카드 */}
             <div className="sc-total-card">
                 <div className="sc-total-content">
                     <p className="sc-total-label">총 지출 금액</p>
-                    <h2 className="sc-total-value">
-                        ₩{totalExpenditure.toLocaleString()}
-                    </h2>
+                    <h2 className="sc-total-value">₩{totalExpenditure.toLocaleString()}</h2>
                 </div>
-                {/* Decoration */}
                 <div className="sc-deco-1"></div>
                 <div className="sc-deco-2"></div>
             </div>
 
-            {/* 앨범 종류별 수량 요약 */}
             {sortedAlbums.length > 0 && (
                 <div className="sc-stats-card">
                     <div className="sc-stats-header">
                         <h3 className="sc-stats-title">앨범 종류별 수량</h3>
-                        <svg className="sc-stats-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
+                        <svg className="sc-stats-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                        </svg>
                     </div>
                     <div className="sc-stats-list">
                         {sortedAlbums.map(([name, count], idx) => {

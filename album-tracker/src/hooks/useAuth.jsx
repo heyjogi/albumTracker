@@ -11,24 +11,18 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        // Init session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session)
             setUser(session?.user ?? null)
-            if (session?.user) {
-                checkUserStatus(session.user)
-            } else {
-                setLoading(false)
-            }
+            if (session?.user) checkUserStatus(session.user)
+            else setLoading(false)
         })
 
-        // Listen for changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session)
             setUser(session?.user ?? null)
-            if (session?.user) {
-                checkUserStatus(session.user)
-            } else {
+            if (session?.user) checkUserStatus(session.user)
+            else {
                 setProfile(null)
                 setIsAllowed(null)
                 setLoading(false)
@@ -40,57 +34,57 @@ export const AuthProvider = ({ children }) => {
 
     const checkUserStatus = async (currentUser) => {
         try {
-            // Check whitelist
+            // 1. 허용 이메일 확인 (error 객체도 함께 받아서 체크)
             const { data: allowedData, error: allowedError } = await supabase
                 .from('allowed_emails')
-                .select('*')
+                .select('email')
                 .eq('email', currentUser.email)
-                .single()
+                .maybeSingle(); // single() 대신 maybeSingle() 사용 권장 (데이터 없어도 에러 안남)
 
-            if (allowedError || !allowedData) {
-                setIsAllowed(false)
+            if (!allowedData) {
+                // 허용 리스트에 아예 없는 이메일인 경우
+                setIsAllowed(false);
+                setProfile(null);
             } else {
-                setIsAllowed(true)
-                // Check profile
-                const { data: profileData } = await supabase
-                    .from('profiles')
+                // 허용된 사용자임!
+                setIsAllowed(true);
+
+                // 2. 프로필 조회 (로그인한 유저 ID로 조회)
+                const { data: profileData, error: profileError } = await supabase
+                    .from('safe_profiles')
                     .select('*')
-                    .eq('id', currentUser.id)
-                    .single()
-                
-                setProfile(profileData || null)
+                    .eq('id', currentUser.id) // safe_view라면 id로 정확히 매칭 필요
+                    .maybeSingle();
+
+                if (profileError) {
+                    console.error('Error fetching profile:', profileError);
+                }
+
+                // 데이터가 없으면 null이 들어가고, AuthWrapper가 이걸 보고 setup 페이지로 보냄
+                setProfile(profileData || null);
             }
-        } catch (error) {
-            console.error('Error checking user status:', error)
+        } catch (err) {
+            console.error('checkUserStatus error:', err);
+            setIsAllowed(false);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 
     const signInWithGoogle = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: {
-                redirectTo: window.location.origin,
-            }
+            options: { redirectTo: window.location.origin }
         })
-        if (error) console.error('Error logging in:', error.message)
+        if (error) console.error(error.message)
     }
 
-    const signOut = async () => {
-        await supabase.auth.signOut()
-    }
+    const signOut = async () => await supabase.auth.signOut()
 
     return (
         <AuthContext.Provider value={{
-            user,
-            session,
-            profile,
-            isAllowed,
-            loading,
-            signInWithGoogle,
-            signOut,
-            setProfile // to manually update profile after setup
+            user, session, profile, isAllowed, loading,
+            signInWithGoogle, signOut, setProfile
         }}>
             {children}
         </AuthContext.Provider>

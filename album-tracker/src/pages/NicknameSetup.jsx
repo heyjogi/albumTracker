@@ -13,47 +13,33 @@ export default function NicknameSetup() {
 
     const handleChange = (e) => {
         const value = e.target.value
-        // 정규식 검사: 특수문자 금지, 영문(대소문자 구분), 숫자, 한글만 허용
-        if (/[^a-zA-Z0-9가-힣]/.test(value)) {
-            setError('특수문자나 띄어쓰기는 사용할 수 없습니다.')
-        } else {
-            setError('')
-        }
+        if (/[^a-zA-Z0-9가-힣]/.test(value)) setError('특수문자나 띄어쓰기는 사용할 수 없습니다.')
+        else setError('')
         setNickname(value)
     }
 
     const save = async () => {
-        if (!nickname.trim()) {
-            setError('닉네임을 입력해주세요.')
-            return
-        }
+        if (!nickname.trim()) { setError('닉네임을 입력해주세요.'); return }
         if (error) return
 
         setLoading(true)
         try {
-            // 중복 확인
+            // 중복 체크 (실제 테이블)
             const { data: existing } = await supabase
                 .from('profiles')
                 .select('nickname')
                 .eq('nickname', nickname)
                 .single()
-
-            if (existing) {
-                setError('이미 사용중인 닉네임입니다.')
-                setLoading(false)
-                return
-            }
+            if (existing) { setError('이미 사용중인 닉네임입니다.'); setLoading(false); return }
 
             // 저장
             const { data, error: insertError } = await supabase
                 .from('profiles')
-                .insert([{ id: user.id, nickname }])
+                .upsert([{ id: user.id, nickname }])
                 .select()
                 .single()
-
             if (insertError) throw insertError
 
-            // Context 프로필 업데이트 후 메인 이동
             setProfile(data)
             navigate('/')
         } catch (err) {
