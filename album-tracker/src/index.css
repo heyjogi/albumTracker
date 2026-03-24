@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #faebe8;
+  --color-brand-100: #f4d3cd;
+  --color-brand-200: #eeb5aa;
+  --color-brand-300: #e69080;
+  --color-brand-400: #df705c;
+  --color-brand-500: #d93915;
+  --color-brand-600: #b52c0f;
+  --color-brand-700: #8f230d;
+  --color-brand-800: #731e0c;
+  --color-brand-900: #5c1a0c;
+  --color-brand-950: #330c04;
+  --color-slate-50: #f8f9fa;
+  --color-slate-100: #f1f3f5;
+  --color-slate-200: #cdd2d5;
+  --color-slate-300: #b6bcc0;
+  --color-slate-400: #9aa0a6;
+  --color-slate-500: #80868b;
+  --color-slate-600: #5d5e61;
+  --color-slate-700: #4a4b4d;
+  --color-slate-800: #5d5e61;
+  --color-slate-900: #202124;
+  --color-slate-950: #171717;
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+}
+
+body {
+  @apply bg-slate-200 min-h-screen text-slate-800 antialiased font-sans;
+  margin: 0;
+}
+
+/* Base resets & utilities can go here */
