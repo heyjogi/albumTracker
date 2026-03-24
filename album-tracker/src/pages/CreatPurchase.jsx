@@ -7,14 +7,18 @@ export default function CreatePurchase() {
     const { user, profile } = useAuth()
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
-    
-    // Options
+
     const [stores, setStores] = useState([])
     const [teams, setTeams] = useState([])
+    const [albums, setAlbums] = useState([])        // 선택된 구매처의 앨범 목록
+    const [teamMembers, setTeamMembers] = useState([]) // 선택된 팀의 멤버
 
     const [form, setForm] = useState({
+        store_id: '',
         store_name: '',
+        team_id: '',
         team_name: '개인',
+        album_id: '',
         album_name: '',
         event_name: '',
         price: 0,
@@ -34,31 +38,102 @@ export default function CreatePurchase() {
         setTeams(ts || [])
     }
 
+    // 구매처 선택 시 → 해당 store의 앨범 목록 fetch
+    const handleStoreChange = async (e) => {
+        const storeId = e.target.value
+        const store = stores.find(s => s.id === storeId)
+        setForm(f => ({
+            ...f,
+            store_id: storeId,
+            store_name: store?.name || '',
+            album_id: '',
+            album_name: '',
+            event_name: '',
+            price: 0,
+            quantity: 1
+        }))
+        setAlbums([])
+
+        if (storeId) {
+            const { data } = await supabase
+                .from('store_albums')
+                .select('*')
+                .eq('store_id', storeId)
+            setAlbums(data || [])
+        }
+    }
+
+    // 분철팀 선택 시 → 팀 멤버 fetch해서 수량 자동 계산
+    const handleTeamChange = async (e) => {
+        const teamId = e.target.value
+        const team = teams.find(t => t.id === teamId)
+        setForm(f => ({ ...f, team_id: teamId, team_name: team?.name || '개인' }))
+        setTeamMembers([])
+
+        if (teamId) {
+            const { data } = await supabase
+                .from('team_members')
+                .select('*')
+                .eq('team_id', teamId)
+            setTeamMembers(data || [])
+            // 멤버 수 기준으로 수량 자동 기입
+            if (data && data.length > 0) {
+                const totalQty = data.reduce((sum, m) => sum + (m.quantity || 1), 0)
+                setForm(f => ({ ...f, quantity: totalQty }))
+            }
+        }
+    }
+
+    // 앨범 선택 시 → price, event_name, quantity 자동기입
+    const handleAlbumChange = (e) => {
+        const albumId = e.target.value
+        const album = albums.find(a => a.id === albumId)
+        if (!album) return
+        setForm(f => ({
+            ...f,
+            album_id: albumId,
+            album_name: album.album_name,
+            event_name: album.event_name || '',
+            price: album.price,
+            // 팀 멤버가 있으면 멤버 수량 유지, 없으면 앨범 기본 수량
+            quantity: teamMembers.length > 0
+                ? teamMembers.reduce((sum, m) => sum + (m.quantity || 1), 0)
+                : album.default_quantity || 1
+        }))
+    }
+
     const submit = async () => {
         setLoading(true)
         try {
-            // Find or create team (simplified MVP)
-            let team_id = null
-            if (form.team_name !== '개인') {
-                const existingTeam = teams.find(t => t.name === form.team_name)
-                if (existingTeam) {
-                    team_id = existingTeam.id
-                } else {
-                    const { data: newTeam } = await supabase.from('teams')
-                        .insert({ name: form.team_name, created_by: profile.id, leader_id: profile.id })
-                        .select().single()
-                    if (newTeam) team_id = newTeam.id
+            const store = stores.find(s => s.id === form.store_id)
+            const storeShippingFee = store?.shipping_fee ?? 3000
+            const freeShippingThreshold = store?.free_shipping_threshold ?? 50000
+            
+            let calculatedShippingFee = 0
+            const price = parseFloat(form.price) || 0
+            const quantity = parseInt(form.quantity) || 1
+
+            if (form.team_id) {
+                if (price * 5 < freeShippingThreshold) {
+                    calculatedShippingFee = storeShippingFee
+                }
+            } else {
+                if (price * quantity < freeShippingThreshold) {
+                    calculatedShippingFee = storeShippingFee
                 }
             }
 
             await supabase.from('purchases').insert({
                 user_id: user.id,
-                team_id,
+                team_id: form.team_id || null,
+                store_id: form.store_id || null,
+                album_id: form.album_id || null,
                 store_name: form.store_name,
                 album_name: form.album_name,
                 event_name: form.event_name,
-                price: parseFloat(form.price) || 0,
-                quantity: parseInt(form.quantity) || 1,
+                price: price,
+                quantity: quantity,
+                shipping_fee: calculatedShippingFee,
                 shipping_discount: 0,
                 is_settled: false,
                 received: false
@@ -72,90 +147,128 @@ export default function CreatePurchase() {
         }
     }
 
+    const selectClass = "w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none bg-white appearance-none"
+    const inputClass = "w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none"
+
     return (
         <div className="flex flex-col min-h-screen bg-slate-200 p-4">
             <header className="flex items-center mb-6 pt-4">
                 <button onClick={() => navigate('/')} className="p-2 bg-white rounded-full shadow text-brand-600 mr-4">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
                 </button>
                 <h1 className="text-2xl font-bold text-slate-800">새 구매내역 등록</h1>
             </header>
 
             <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
+
+                {/* 구매처 드롭다운 */}
                 <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">구매처</label>
-                    <input 
-                        type="text" 
-                        placeholder="예: 위드뮤, 알라딘 등"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none"
-                        value={form.store_name}
-                        onChange={e => setForm({...form, store_name: e.target.value})}
-                        list="stores-list"
-                    />
-                    <datalist id="stores-list">
-                        {stores.map(s => <option key={s.id} value={s.name} />)}
-                    </datalist>
+                    <div className="relative">
+                        <select className={selectClass} value={form.store_id} onChange={handleStoreChange}>
+                            <option value="">구매처를 선택하세요</option>
+                            {stores.map(s => (
+                                <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                        </select>
+                        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">▾</span>
+                    </div>
                 </div>
 
+                {/* 분철팀 드롭다운 */}
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">분철팀 (직접 입력 가능)</label>
-                    <input 
-                        type="text" 
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none"
-                        value={form.team_name}
-                        onChange={e => setForm({...form, team_name: e.target.value})}
-                        list="teams-list"
-                    />
-                    <datalist id="teams-list">
-                        <option value="개인" />
-                        {teams.map(t => <option key={t.id} value={t.name} />)}
-                    </datalist>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">분철팀</label>
+                    <div className="relative">
+                        <select className={selectClass} value={form.team_id} onChange={handleTeamChange}>
+                            <option value="">개인</option>
+                            {teams.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </select>
+                        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">▾</span>
+                    </div>
+                    {/* 팀 선택 시 멤버 표시 */}
+                    {teamMembers.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                            {teamMembers.map(m => (
+                                <span key={m.id} className="text-xs bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-medium">
+                                    {m.member_name} ×{m.quantity || 1}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
+                {/* 앨범 선택 — 구매처 선택 후에만 표시 */}
+                {form.store_id && (
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">앨범</label>
+                        {albums.length === 0 ? (
+                            <p className="text-sm text-slate-400 px-1">등록된 앨범이 없습니다. 직접 입력해주세요.</p>
+                        ) : (
+                            <div className="relative">
+                                <select className={selectClass} value={form.album_id} onChange={handleAlbumChange}>
+                                    <option value="">앨범을 선택하세요</option>
+                                    {albums.map(a => (
+                                        <option key={a.id} value={a.id}>
+                                            {a.album_name}{a.event_name ? ` (${a.event_name})` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">▾</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* 앨범명 / 이벤트명 직접 입력 (앨범 미선택시 또는 보정용) */}
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">앨범 종류 / 이벤트명</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">앨범명 / 이벤트명</label>
                     <div className="flex gap-2">
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder="앨범명"
-                            className="w-1/2 px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none"
+                            className={`w-1/2 ${inputClass}`}
                             value={form.album_name}
-                            onChange={e => setForm({...form, album_name: e.target.value})}
+                            onChange={e => setForm({ ...form, album_name: e.target.value })}
                         />
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder="이벤트명"
-                            className="w-1/2 px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none"
+                            className={`w-1/2 ${inputClass}`}
                             value={form.event_name}
-                            onChange={e => setForm({...form, event_name: e.target.value})}
+                            onChange={e => setForm({ ...form, event_name: e.target.value })}
                         />
                     </div>
                 </div>
 
+                {/* 가격 / 수량 */}
                 <div className="flex gap-4">
                     <div className="flex-1">
                         <label className="block text-sm font-semibold text-slate-700 mb-2">가격 (원)</label>
-                        <input 
-                            type="number" 
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none"
+                        <input
+                            type="number"
+                            className={inputClass}
                             value={form.price}
-                            onChange={e => setForm({...form, price: e.target.value})}
+                            onChange={e => setForm({ ...form, price: e.target.value })}
                         />
                     </div>
                     <div className="w-1/3">
                         <label className="block text-sm font-semibold text-slate-700 mb-2">수량</label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             min="1"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none"
+                            className={inputClass}
                             value={form.quantity}
-                            onChange={e => setForm({...form, quantity: e.target.value})}
+                            onChange={e => setForm({ ...form, quantity: e.target.value })}
                         />
                     </div>
                 </div>
 
                 <div className="pt-4">
-                    <button 
+                    <button
                         onClick={submit}
                         disabled={loading || !form.store_name}
                         className="w-full py-4 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold rounded-xl shadow-md transition-colors"
