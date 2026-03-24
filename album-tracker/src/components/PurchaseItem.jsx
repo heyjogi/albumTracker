@@ -1,4 +1,3 @@
-// PurchaseItem.jsx
 import { useState, useRef, useEffect } from 'react'
 import StatusBadge from './StatusBadge'
 import { supabase } from '../lib/supabase'
@@ -28,7 +27,6 @@ export default function PurchaseItem({ item, refresh }) {
         if (isMenuOpen && menuBtnRef.current) {
             const rect = menuBtnRef.current.getBoundingClientRect()
             const spaceBelow = window.innerHeight - rect.bottom
-            // 바텀 네비게이션바 등 하단 여백 고려하여 280px 미만이면 위로 띄움
             if (spaceBelow < 280) {
                 setPopPosition('top')
             } else {
@@ -71,18 +69,30 @@ export default function PurchaseItem({ item, refresh }) {
         <div className="pi-card">
             <div className="pi-left-wrap">
                 <div className="pi-img-pl">
-                    <span className="pi-img-text">IMAGE</span>
+                    {item.event_image_url ? (
+                        <img
+                            src={item.event_image_url}
+                            alt={albumName}
+                            className="pi-img-photo"
+                        />
+                    ) : (
+                        <span className="pi-img-text">IMAGE</span>
+                    )}
                 </div>
                 <div className="pi-details">
                     <h3 className="pi-title">{albumName} {eventName}</h3>
                     <div className="pi-tags">
                         <span className="pi-store">{storeName}</span>
+                    </div>
+                    <div className="pi-meta">
                         <span className="pi-qty">수량: {item.quantity}</span>
                         {item.shipping_fee > 0 && (
-                            <span className="pi-shipping">배송비 {(item.team_id ? Math.floor(item.shipping_fee / 5) : item.shipping_fee).toLocaleString()}원</span>
+                            <>
+                                <span className="pi-dot">·</span>
+                                <span className="pi-shipping">배송비 {(item.team_id ? Math.floor(item.shipping_fee / 5) : item.shipping_fee).toLocaleString()}원</span>
+                            </>
                         )}
                     </div>
-                    {/* 마감일 표시 */}
                     {dday && (
                         <span className={`pi-dday ${dday.color}`}>
                             {dday.label} {item.event_end_at && `· ${new Date(item.event_end_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}`}
@@ -107,7 +117,6 @@ export default function PurchaseItem({ item, refresh }) {
                 </button>
             </div>
 
-            {/* 상태 관리 팝업 */}
             {isMenuOpen && (
                 <div className={`pi-pop-wrap ${popPosition === 'top' ? 'pi-pop-top' : 'pi-pop-bottom'}`}>
                     <div className="pi-pop-header">
@@ -115,7 +124,6 @@ export default function PurchaseItem({ item, refresh }) {
                         <button onClick={() => { setIsMenuOpen(false); setConfirmDelete(false) }} className="pi-pop-close">×</button>
                     </div>
                     <div className="pi-pop-content">
-                        {/* 정산 토글 */}
                         <div className="pi-toggle-row">
                             <span className="pi-toggle-label">정산 여부</span>
                             <button
@@ -126,7 +134,6 @@ export default function PurchaseItem({ item, refresh }) {
                                 <span className={`pi-toggle-knob ${item.is_settled ? 'pi-toggle-knob-active' : ''}`} />
                             </button>
                         </div>
-                        {/* 수령 토글 */}
                         <div className="pi-toggle-row">
                             <span className="pi-toggle-label">수령 여부</span>
                             <button
@@ -137,15 +144,13 @@ export default function PurchaseItem({ item, refresh }) {
                                 <span className={`pi-toggle-knob ${item.received ? 'pi-toggle-knob-active' : ''}`} />
                             </button>
                         </div>
-
-                        {/* 구분선 */}
                         <div className="pi-divider">
                             <button
                                 disabled={loading}
                                 onClick={handleDelete}
                                 className={`pi-btn-del ${confirmDelete ? 'pi-btn-del-confirm' : 'pi-btn-del-normal'}`}
                             >
-                                {confirmDelete ? '정말 삭제할까요? 탭하면 삭제됩니다' : '🗑 구매내역 삭제'}
+                                {confirmDelete ? '정말 삭제할까요?\n탭하면 삭제됩니다' : '🗑 구매내역 삭제'}
                             </button>
                             {confirmDelete && (
                                 <button
