@@ -9,7 +9,7 @@
 }
 
 .pi-img-pl {
-    @apply w-16 h-16 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shrink-0;
+    @apply w-13 h-20 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shrink-0 object-cover;
 }
 
 .pi-img-photo {

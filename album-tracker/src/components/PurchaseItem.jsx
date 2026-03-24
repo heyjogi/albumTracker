@@ -16,6 +16,17 @@ function getDday(dateStr) {
     return { label: `D-${diff}`, color: 'text-brand-600 bg-brand-50' }
 }
 
+function formatEndDate(dateStr) {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    const yr = d.getFullYear().toString().slice(2)
+    const mo = String(d.getMonth() + 1).padStart(2, '0')
+    const da = String(d.getDate()).padStart(2, '0')
+    const hr = String(d.getHours()).padStart(2, '0')
+    const mi = String(d.getMinutes()).padStart(2, '0')
+    return `${yr}.${mo}.${da} ${hr}:${mi}`
+}
+
 export default function PurchaseItem({ item, refresh }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -93,9 +104,14 @@ export default function PurchaseItem({ item, refresh }) {
                             </>
                         )}
                     </div>
+                    {item.event_end_at && (
+                        <div className="text-[11px] text-slate-400 mt-0.5 tracking-tight">
+                            응모마감 | {formatEndDate(item.event_end_at)}
+                        </div>
+                    )}
                     {dday && (
                         <span className={`pi-dday ${dday.color}`}>
-                            {dday.label} {item.event_end_at && `· ${new Date(item.event_end_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}`}
+                            {dday.label}
                         </span>
                     )}
                 </div>

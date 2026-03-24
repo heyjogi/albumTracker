@@ -96,7 +96,6 @@ export default function CreatePurchase() {
             setAlbums(data || [])
         }
     }
-
     const handleAlbumChange = async (e) => {
         const albumId = e.target.value
         const album = albums.find(a => a.id === albumId)
@@ -121,13 +120,20 @@ export default function CreatePurchase() {
         const loaded = sortMembers(members || [])
         setAlbumMembers(loaded)
 
-        const allIds = loaded.map(m => m.id)
-        setSelectedMemberIds(allIds)
-
-        const qty = form.team_id
-            ? teamMembers.reduce((sum, m) => sum + (m.quantity || 1), 0) || 1
-            : allIds.length
-        setForm(f => ({ ...f, quantity: qty }))
+        if (form.team_id) {
+            // 팀 선택 → 팀 멤버만 선택
+            const teamMemberNames = teamMembers.map(m => m.member_name)
+            const selectedIds = loaded
+                .filter(m => teamMemberNames.includes(m.member_name))
+                .map(m => m.id)
+            setSelectedMemberIds(selectedIds)
+            setForm(f => ({ ...f, quantity: selectedIds.reduce((sum, id) => sum + 1, 0) || 1 }))
+        } else {
+            // 개인 → 전체 선택
+            const allIds = loaded.map(m => m.id)
+            setSelectedMemberIds(allIds)
+            setForm(f => ({ ...f, quantity: allIds.length }))
+        }
     }
 
     const handleTeamChange = async (e) => {
@@ -151,7 +157,7 @@ export default function CreatePurchase() {
     }
 
     const toggleAlbumMember = (memberId) => {
-        if (form.team_id) return
+        if (!isPersonal) return // 팀일 때는 클릭 불가
         setSelectedMemberIds(prev => {
             const next = prev.includes(memberId)
                 ? prev.filter(id => id !== memberId)
@@ -162,7 +168,8 @@ export default function CreatePurchase() {
     }
 
     const toggleSelectAll = () => {
-        if (form.team_id) return
+        if (!isPersonal) return
+
         if (selectedMemberIds.length === albumMembers.length) {
             setSelectedMemberIds([])
             setForm(f => ({ ...f, quantity: 0 }))
@@ -320,6 +327,7 @@ export default function CreatePurchase() {
                                 <option key={t.id} value={t.id}>{t.name}</option>
                             ))}
                         </select>
+                        <span className="cp-select-icon">▾</span>
                     </div>
                 </div>
 

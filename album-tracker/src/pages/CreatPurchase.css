@@ -147,13 +147,14 @@
 /* 이미지 영역 */
 .cp-member-img {
     position: relative;
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 80px;
     border-radius: 16px;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    object-fit: cover;
 }
 
 /* 선택됨 */
