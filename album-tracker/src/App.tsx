@@ -4,6 +4,8 @@ import Main from './pages/Main'
 import Login from './pages/Login'
 import NicknameSetup from './pages/NicknameSetup'
 import CreatePurchase from './pages/CreatPurchase'
+import AllPurchases from './pages/AllPurchases'
+import Settings from './pages/Settings'
 import { AuthProvider } from './hooks/useAuth'
 import AuthWrapper from './components/AuthWrapper'
 
@@ -16,6 +18,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/setup-nickname" element={<NicknameSetup />} />
             <Route path="/create-purchase" element={<CreatePurchase />} />
+            <Route path="/purchases" element={<AllPurchases />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/" element={<Main />} />
           </Routes>
         </AuthWrapper>

@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom'
 import PurchaseItem from './PurchaseItem'
 import './PurchaseList.css'
 
-export default function PurchaseList({ list, refresh }) {
+export default function PurchaseList({ list, refresh, limit }) {
+    const navigate = useNavigate()
     if (!list || list.length === 0) {
         return (
             <div className="pl-empty-container">
@@ -11,15 +13,19 @@ export default function PurchaseList({ list, refresh }) {
         )
     }
 
+    const displayedList = limit ? list.slice(0, limit) : list
+
     return (
         <div className="pl-container">
             <div className="pl-header">
                 <h2 className="pl-title">진행 중인 분철/구매</h2>
-                <button className="pl-view-all">
-                    전체 보기 →
-                </button>
+                {limit && limit < list.length && (
+                    <button className="pl-view-all" onClick={() => navigate('/purchases')}>
+                        전체 보기 →
+                    </button>
+                )}
             </div>
-            {list.map(v => (
+            {displayedList.map(v => (
                 <PurchaseItem key={v.id} item={v} refresh={refresh} />
             ))}
         </div>
