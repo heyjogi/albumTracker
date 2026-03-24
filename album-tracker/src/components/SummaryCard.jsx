@@ -4,7 +4,8 @@ export default function SummaryCard({ list }) {
     if (!list) return null
 
     const totalExpenditure = list.reduce((acc, curr) => {
-        return acc + (curr.price * curr.quantity)
+        const itemShipping = curr.shipping_fee ? (curr.team_id ? curr.shipping_fee / 5 : curr.shipping_fee) : 0
+        return acc + (curr.price * curr.quantity) + itemShipping
     }, 0)
 
     // Aggregate by album_name

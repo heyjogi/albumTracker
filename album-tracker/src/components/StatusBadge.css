@@ -1,16 +1,21 @@
 @reference "../index.css";
-.status-badge { 
-    @apply px-2 py-1 text-xs font-semibold rounded-full; 
+
+.status-badge {
+    @apply px-2 py-1 text-xs font-semibold rounded-full;
 }
-.status-badge.settle-true { 
-    @apply bg-emerald-100 text-emerald-700; 
+
+.status-badge.settle-true {
+    @apply bg-emerald-100 text-emerald-700;
 }
-.status-badge.settle-false { 
-    @apply bg-rose-100 text-rose-700; 
+
+.status-badge.settle-false {
+    @apply bg-rose-100 text-rose-700;
 }
-.status-badge.receive-true { 
-    @apply bg-emerald-100 text-emerald-700; 
+
+.status-badge.receive-true {
+    @apply bg-emerald-100 text-emerald-700;
 }
-.status-badge.receive-false { 
-    @apply bg-slate-100 text-slate-600; 
+
+.status-badge.receive-false {
+    @apply bg-slate-100 text-slate-600;
 }

@@ -1,5 +1,5 @@
 // PurchaseItem.jsx
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import StatusBadge from './StatusBadge'
 import { supabase } from '../lib/supabase'
 import './PurchaseItem.css'
@@ -21,6 +21,21 @@ export default function PurchaseItem({ item, refresh }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [confirmDelete, setConfirmDelete] = useState(false)
+    const [popPosition, setPopPosition] = useState('bottom')
+    const menuBtnRef = useRef(null)
+
+    useEffect(() => {
+        if (isMenuOpen && menuBtnRef.current) {
+            const rect = menuBtnRef.current.getBoundingClientRect()
+            const spaceBelow = window.innerHeight - rect.bottom
+            // 바텀 네비게이션바 등 하단 여백 고려하여 280px 미만이면 위로 띄움
+            if (spaceBelow < 280) {
+                setPopPosition('top')
+            } else {
+                setPopPosition('bottom')
+            }
+        }
+    }, [isMenuOpen])
 
     const albumName = item.album_name || '앨범 이름 없음'
     const storeName = item.store_name || '구매처 없음'
@@ -64,7 +79,7 @@ export default function PurchaseItem({ item, refresh }) {
                         <span className="pi-store">{storeName}</span>
                         <span className="pi-qty">수량: {item.quantity}</span>
                         {item.shipping_fee > 0 && (
-                            <span className="pi-shipping">배송비 {item.shipping_fee.toLocaleString()}원</span>
+                            <span className="pi-shipping">배송비 {(item.team_id ? Math.floor(item.shipping_fee / 5) : item.shipping_fee).toLocaleString()}원</span>
                         )}
                     </div>
                     {/* 마감일 표시 */}
@@ -82,6 +97,7 @@ export default function PurchaseItem({ item, refresh }) {
                     <StatusBadge type="receive" status={item.received} label={item.received ? '수령 완료' : '주문 완료'} />
                 </div>
                 <button
+                    ref={menuBtnRef}
                     onClick={() => { setIsMenuOpen(!isMenuOpen); setConfirmDelete(false) }}
                     className="pi-menu-btn"
                 >
@@ -93,7 +109,7 @@ export default function PurchaseItem({ item, refresh }) {
 
             {/* 상태 관리 팝업 */}
             {isMenuOpen && (
-                <div className="pi-pop-wrap">
+                <div className={`pi-pop-wrap ${popPosition === 'top' ? 'pi-pop-top' : 'pi-pop-bottom'}`}>
                     <div className="pi-pop-header">
                         <span className="pi-pop-title">상태 관리</span>
                         <button onClick={() => { setIsMenuOpen(false); setConfirmDelete(false) }} className="pi-pop-close">×</button>

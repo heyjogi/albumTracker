@@ -5,14 +5,16 @@ import { useAuth } from '../hooks/useAuth'
 import './CreatPurchase.css'
 
 export default function CreatePurchase() {
-    const { user, profile } = useAuth()
+    const { user } = useAuth()
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
 
     const [stores, setStores] = useState([])
     const [teams, setTeams] = useState([])
-    const [albums, setAlbums] = useState([])        // 선택된 구매처의 앨범 목록
-    const [teamMembers, setTeamMembers] = useState([]) // 선택된 팀의 멤버
+    const [albums, setAlbums] = useState([])
+    const [teamMembers, setTeamMembers] = useState([])   // 분철팀 고정 멤버
+    const [albumMembers, setAlbumMembers] = useState([]) // 앨범 멤버 (album_members)
+    const [selectedMemberIds, setSelectedMemberIds] = useState([]) // 선택된 앨범 멤버
 
     const [form, setForm] = useState({
         store_id: '',
@@ -37,9 +39,23 @@ export default function CreatePurchase() {
         ])
         setStores(ss || [])
         setTeams(ts || [])
+
+        // 첫번째 팀 자동 선택
+        if (ts && ts.length > 0) {
+            const firstTeam = ts[0]
+            setForm(f => ({ ...f, team_id: firstTeam.id, team_name: firstTeam.name }))
+            const { data: members } = await supabase
+                .from('team_members')
+                .select('*')
+                .eq('team_id', firstTeam.id)
+            const loaded = members || []
+            setTeamMembers(loaded)
+            const totalQty = loaded.reduce((sum, m) => sum + (m.quantity || 1), 0)
+            setForm(f => ({ ...f, quantity: totalQty || 1 }))
+        }
     }
 
-    // 구매처 선택 시 → 해당 store의 앨범 목록 fetch
+    // 구매처 선택
     const handleStoreChange = async (e) => {
         const storeId = e.target.value
         const store = stores.find(s => s.id === storeId)
@@ -51,9 +67,10 @@ export default function CreatePurchase() {
             album_name: '',
             event_name: '',
             price: 0,
-            quantity: 1
         }))
         setAlbums([])
+        setAlbumMembers([])
+        setSelectedMemberIds([])
 
         if (storeId) {
             const { data } = await supabase
@@ -64,7 +81,46 @@ export default function CreatePurchase() {
         }
     }
 
-    // 분철팀 선택 시 → 팀 멤버 fetch해서 수량 자동 계산
+    // 앨범 선택 → album_members fetch
+    const handleAlbumChange = async (e) => {
+        const albumId = e.target.value
+        const album = albums.find(a => a.id === albumId)
+        if (!album) {
+            setAlbumMembers([])
+            setSelectedMemberIds([])
+            return
+        }
+
+        setForm(f => ({
+            ...f,
+            album_id: albumId,
+            album_name: album.album_name,
+            event_name: album.event_name || '',
+            price: album.price,
+        }))
+
+        // album_members 로드
+        const { data: members } = await supabase
+            .from('album_members')
+            .select('*')
+            .eq('album_id', albumId)
+
+        const loaded = members || []
+        setAlbumMembers(loaded)
+
+        // 전체 멤버 기본 선택
+        const allIds = loaded.map(m => m.id)
+        setSelectedMemberIds(allIds)
+
+        // 분철팀이면 팀 수량, 개인이면 선택 멤버 수
+        const qty = form.team_id
+            ? teamMembers.reduce((sum, m) => sum + (m.quantity || 1), 0) || 1
+            : allIds.length
+
+        setForm(f => ({ ...f, quantity: qty }))
+    }
+
+    // 분철팀 선택
     const handleTeamChange = async (e) => {
         const teamId = e.target.value
         const team = teams.find(t => t.id === teamId)
@@ -76,31 +132,39 @@ export default function CreatePurchase() {
                 .from('team_members')
                 .select('*')
                 .eq('team_id', teamId)
-            setTeamMembers(data || [])
-            // 멤버 수 기준으로 수량 자동 기입
-            if (data && data.length > 0) {
-                const totalQty = data.reduce((sum, m) => sum + (m.quantity || 1), 0)
-                setForm(f => ({ ...f, quantity: totalQty }))
-            }
+            const loaded = data || []
+            setTeamMembers(loaded)
+            const totalQty = loaded.reduce((sum, m) => sum + (m.quantity || 1), 0)
+            setForm(f => ({ ...f, quantity: totalQty || 1 }))
+        } else {
+            // 개인: 현재 선택된 앨범 멤버 수로 수량 설정
+            setForm(f => ({ ...f, quantity: selectedMemberIds.length || 1 }))
         }
     }
 
-    // 앨범 선택 시 → price, event_name, quantity 자동기입
-    const handleAlbumChange = (e) => {
-        const albumId = e.target.value
-        const album = albums.find(a => a.id === albumId)
-        if (!album) return
-        setForm(f => ({
-            ...f,
-            album_id: albumId,
-            album_name: album.album_name,
-            event_name: album.event_name || '',
-            price: album.price,
-            // 팀 멤버가 있으면 멤버 수량 유지, 없으면 앨범 기본 수량
-            quantity: teamMembers.length > 0
-                ? teamMembers.reduce((sum, m) => sum + (m.quantity || 1), 0)
-                : album.default_quantity || 1
-        }))
+    // 앨범 멤버 카드 토글 (개인일 때만)
+    const toggleAlbumMember = (memberId) => {
+        if (form.team_id) return // 분철팀이면 토글 불가
+        setSelectedMemberIds(prev => {
+            const next = prev.includes(memberId)
+                ? prev.filter(id => id !== memberId)
+                : [...prev, memberId]
+            setForm(f => ({ ...f, quantity: next.length || 1 }))
+            return next
+        })
+    }
+
+    // 전체 선택 / 해제
+    const toggleSelectAll = () => {
+        if (form.team_id) return
+        if (selectedMemberIds.length === albumMembers.length) {
+            setSelectedMemberIds([])
+            setForm(f => ({ ...f, quantity: 0 }))
+        } else {
+            const allIds = albumMembers.map(m => m.id)
+            setSelectedMemberIds(allIds)
+            setForm(f => ({ ...f, quantity: allIds.length }))
+        }
     }
 
     const submit = async () => {
@@ -109,19 +173,15 @@ export default function CreatePurchase() {
             const store = stores.find(s => s.id === form.store_id)
             const storeShippingFee = store?.shipping_fee ?? 3000
             const freeShippingThreshold = store?.free_shipping_threshold ?? 50000
-            
+
             let calculatedShippingFee = 0
             const price = parseFloat(form.price) || 0
             const quantity = parseInt(form.quantity) || 1
 
             if (form.team_id) {
-                if (price * 5 < freeShippingThreshold) {
-                    calculatedShippingFee = storeShippingFee
-                }
+                if (price * 5 < freeShippingThreshold) calculatedShippingFee = storeShippingFee
             } else {
-                if (price * quantity < freeShippingThreshold) {
-                    calculatedShippingFee = storeShippingFee
-                }
+                if (price * quantity < freeShippingThreshold) calculatedShippingFee = storeShippingFee
             }
 
             await supabase.from('purchases').insert({
@@ -148,6 +208,8 @@ export default function CreatePurchase() {
         }
     }
 
+    const isPersonal = !form.team_id
+    const allSelected = albumMembers.length > 0 && selectedMemberIds.length === albumMembers.length
     const selectClass = "cp-select"
     const inputClass = "cp-input-full"
 
@@ -164,7 +226,7 @@ export default function CreatePurchase() {
 
             <div className="cp-card">
 
-                {/* 구매처 드롭다운 */}
+                {/* 1. 구매처 */}
                 <div>
                     <label className="cp-label">구매처</label>
                     <div className="cp-select-wrap">
@@ -178,31 +240,7 @@ export default function CreatePurchase() {
                     </div>
                 </div>
 
-                {/* 분철팀 드롭다운 */}
-                <div>
-                    <label className="cp-label">분철팀</label>
-                    <div className="cp-select-wrap">
-                        <select className={selectClass} value={form.team_id} onChange={handleTeamChange}>
-                            <option value="">개인</option>
-                            {teams.map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                        </select>
-                        <span className="cp-select-icon">▾</span>
-                    </div>
-                    {/* 팀 선택 시 멤버 표시 */}
-                    {teamMembers.length > 0 && (
-                        <div className="cp-team-members">
-                            {teamMembers.map(m => (
-                                <span key={m.id} className="cp-member-badge">
-                                    {m.member_name} ×{m.quantity || 1}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* 앨범 선택 — 구매처 선택 후에만 표시 */}
+                {/* 2. 앨범 — 구매처 선택 후에만 표시 */}
                 {form.store_id && (
                     <div>
                         <label className="cp-label">앨범</label>
@@ -224,7 +262,85 @@ export default function CreatePurchase() {
                     </div>
                 )}
 
-                {/* 앨범명 / 이벤트명 직접 입력 (앨범 미선택시 또는 보정용) */}
+                {/* 3. 분철팀 */}
+                <div>
+                    <label className="cp-label">분철팀</label>
+                    <div className="cp-select-wrap">
+                        <select className={selectClass} value={form.team_id} onChange={handleTeamChange}>
+                            <option value="">개인</option>
+                            {teams.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </select>
+                        <span className="cp-select-icon">▾</span>
+                    </div>
+                    {/* 분철팀 고정 멤버 */}
+                    {!isPersonal && teamMembers.length > 0 && (
+                        <div className="cp-team-members">
+                            {teamMembers.map(m => (
+                                <span key={m.id} className="cp-member-badge">
+                                    {m.member_name} ×{m.quantity || 1}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* 4. 멤버 선택 — 앨범 선택 후 표시 */}
+                {albumMembers.length > 0 && (
+                    <div>
+                        <div className="cp-member-header">
+                            <label className="cp-label" style={{ marginBottom: 0 }}>멤버</label>
+                            {/* 개인일 때만 전체선택 버튼 */}
+                            {isPersonal && (
+                                <button
+                                    type="button"
+                                    onClick={toggleSelectAll}
+                                    className={`cp-select-all-btn ${allSelected ? 'cp-select-all-on' : 'cp-select-all-off'}`}
+                                >
+                                    {allSelected ? '전체 해제' : '전체 선택'}
+                                </button>
+                            )}
+                        </div>
+                        <div className="cp-member-scroll">
+                            {albumMembers.map(m => {
+                                const isSelected = selectedMemberIds.includes(m.id)
+                                const isDisabled = !isPersonal // 분철팀이면 선택 불가
+                                return (
+                                    <button
+                                        key={m.id}
+                                        type="button"
+                                        disabled={isDisabled}
+                                        onClick={() => toggleAlbumMember(m.id)}
+                                        className={`cp-member-card ${isDisabled
+                                                ? 'cp-member-card-fixed'
+                                                : isSelected
+                                                    ? 'cp-member-card-on'
+                                                    : 'cp-member-card-off'
+                                            }`}
+                                    >
+                                        {/* 이미지 자리 */}
+                                        <div className="cp-member-img">
+                                            {isSelected && !isDisabled && (
+                                                <div className="cp-member-check-overlay">
+                                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="cp-member-check-icon">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                            <span className="cp-member-img-placeholder">
+                                                {m.member_name?.charAt(0)}
+                                            </span>
+                                        </div>
+                                        <span className="cp-member-name">{m.member_name}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* 5. 앨범명 / 이벤트명 직접 입력 */}
                 <div>
                     <label className="cp-label">앨범명 / 이벤트명</label>
                     <div className="cp-input-group">
@@ -245,7 +361,7 @@ export default function CreatePurchase() {
                     </div>
                 </div>
 
-                {/* 가격 / 수량 */}
+                {/* 6. 가격 / 수량 */}
                 <div className="cp-row">
                     <div className="cp-col-flex">
                         <label className="cp-label">가격 (원)</label>
