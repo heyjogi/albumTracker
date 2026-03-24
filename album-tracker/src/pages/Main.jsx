@@ -29,7 +29,10 @@ export default function Main() {
     return (
         <div className="main-wrapper">
             <header className="main-header">
-                <h1 className="main-logo">AlbumTracker.</h1>
+                <div className="flex items-center gap-3">
+                    <img src="/logo.svg" alt="Logo" className="w-8 h-8 rounded" />
+                    <h1 className="main-logo">AlbumTracker.</h1>
+                </div>
                 <div className="main-avatar">
                     {profile?.nickname ? profile.nickname.charAt(0).toUpperCase() : 'U'}
                 </div>

@@ -8,7 +8,7 @@ export default function Login() {
         <div className="login-wrap">
             <div className="login-card">
                 <div className="login-logo">
-                    <span className="login-logo-text">A</span>
+                    <img src="/logo.svg" alt="Album Tracker Logo" className="w-full h-full rounded-xl" />
                 </div>
                 <h1 className="login-title">Album Tracker</h1>
                 <p className="login-desc">앨범 분철 정산을 간편하게 관리하세요.</p>
