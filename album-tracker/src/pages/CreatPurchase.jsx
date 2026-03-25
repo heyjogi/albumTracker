@@ -177,9 +177,6 @@ export default function CreatePurchase() {
   const handleAlbumChange = async (e) => {
     const albumId = e.target.value;
 
-    setAlbumMembers([]);
-    setSelectedMemberIds([]);
-
     // 1. 먼저 상태 초기화
     setAlbumMembers([]);
     setSelectedMemberIds([]);
@@ -224,7 +221,7 @@ export default function CreatePurchase() {
     // 5. 앨범 멤버 로드
     const { data: members } = await supabase
       .from("album_members")
-      .select("member_name, event_image_url")
+      .select("id, member_name, event_image_url")
       .eq("album_id", album.internal_album_id);
 
     const loaded = sortMembers(members || []);
@@ -268,9 +265,6 @@ export default function CreatePurchase() {
 
       const loaded = sortMembers(data || []);
       setTeamMembers(loaded);
-
-      // team 객체에 이미 total_members가 있음
-      console.log("팀 전체 멤버 수:", team.total_members);
 
       if (albumMembers.length > 0) {
         const teamMemberNames = loaded.map((m) => m.member_name);
@@ -318,91 +312,76 @@ export default function CreatePurchase() {
       setForm((f) => ({ ...f, quantity: allIds.length }));
     }
   };
-  const submit = async () => {
-    if (!user || !user.id) {
-      alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
-      return;
-    }
+  const submit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+
+    if (!user?.id) return alert("로그인이 필요합니다.");
     setLoading(true);
+    if (!user?.id) return alert("로그인이 필요합니다.");
+    setLoading(true);
+
     try {
-      // 1. [수정] DB 재조회 대신, 이미 불러온 stores 목록에서 선택된 스토어를 찾습니다.
-      const selectedStore = stores.find(
-        (s) => s.public_store_id === form.store_id,
-      );
-
-      // 뷰에 정의된 internal_store_id를 바로 추출합니다.
-      const storeInternalId = selectedStore?.internal_store_id;
-
-      if (!storeInternalId) {
-        throw new Error("구매처 정보를 찾을 수 없습니다. 다시 선택해 주세요.");
-      }
-
-      const price = parseFloat(form.price) || 0;
-      const totalDiscount = parseFloat(form.discount) || 0;
-      const totalShipping = parseFloat(form.shipping_fee) || 0;
-
+      // 2. 필터링 로직 재점검
+      // albumMembers의 각 요소가 가진 id와 selectedMemberIds를 비교합니다.
       const filteredMembers = albumMembers.filter((m) =>
         selectedMemberIds.includes(m.id),
       );
+
       const nCount = filteredMembers.length;
-      if (nCount === 0) throw new Error("등록할 멤버가 없습니다.");
 
-      // 2. N분빵 계산 로직 (기존과 동일)
-      const SHIPPING_DIVISION_FACTOR = 4;
-      let shippingPerPerson = 0;
-      let discountPerPerson = 0;
+      if (nCount === 0) throw new Error("등록할 멤버를 선택해주세요.");
 
-      if (form.team_id) {
-        shippingPerPerson = Math.floor(
-          totalShipping / SHIPPING_DIVISION_FACTOR,
-        );
-        discountPerPerson = Math.floor(
-          totalDiscount / SHIPPING_DIVISION_FACTOR,
-        );
+      // 3. 배송비 및 할인액 계산
+      const DIVISION_FACTOR = 4;
+      const rawShipping = parseFloat(form.shipping_fee) || 0;
+      const rawDiscount = parseFloat(form.discount) || 0;
+
+      let finalShip = 0;
+      let finalDisc = 0;
+
+      if (form.team_id && form.team_id !== "") {
+        // 분철팀일 때: (전체 / 4) / 아이템수
+        finalShip = Math.floor(rawShipping / DIVISION_FACTOR / nCount);
+        finalDisc = Math.floor(rawDiscount / DIVISION_FACTOR / nCount);
       } else {
-        shippingPerPerson = totalShipping;
-        discountPerPerson = totalDiscount;
+        // 개인일 때: 전체 / 아이템수
+        finalShip = Math.floor(rawShipping / nCount);
+        finalDisc = Math.floor(rawDiscount / nCount);
       }
 
-      // 3. 팀 ID 변환 (기존과 동일)
-      let teamIdInternal = null;
-      if (form.team_id) {
-        const selectedTeam = teams.find(
-          (t) => t.public_team_id === form.team_id,
-        );
-        teamIdInternal = selectedTeam?.internal_team_id || null;
-      }
+      // 4. 전송 데이터 생성
+      const selectedStore = stores.find(
+        (s) => s.public_store_id === form.store_id,
+      );
+      const storeInternalId = selectedStore?.internal_store_id;
 
-      // 4. [수정] rows 생성 (storeInternalId 사용)
-      const rows = filteredMembers.map((member) => {
-        return {
-          user_id: user.id,
-          team_id: teamIdInternal,
-          store_id: storeInternalId, // 위에서 찾은 id 사용
-          album_id: member.album_id,
-          store_name: form.store_name,
-          album_name: form.album_name,
-          event_name: form.event_name,
-          price: price,
-          quantity: 1,
-          member_name: member.member_name,
-          event_image_url: member.event_image_url || null,
-          shipping_fee: shippingPerPerson,
-          shipping_discount: discountPerPerson,
-          is_settled: false,
-          received: false,
-        };
-      });
+      const rows = filteredMembers.map((member) => ({
+        user_id: user.id,
+        team_id:
+          teams.find((t) => t.public_team_id === form.team_id)
+            ?.internal_team_id || null,
+        store_id: storeInternalId,
+        album_id: member.album_id,
+        store_name: form.store_name,
+        album_name: form.album_name,
+        event_name: form.event_name,
+        price: parseFloat(form.price) || 0,
+        quantity: 1, // 각 아이템은 항상 수량 1
+        member_name: member.member_name,
+        event_image_url: member.event_image_url || null,
+        shipping_fee: finalShip, // 계산된 값 할당
+        shipping_discount: finalDisc, // 계산된 값 할당
+        is_settled: false,
+        received: false,
+      }));
 
-      const { error: insertError } = await supabase
-        .from("purchases")
-        .insert(rows);
-      if (insertError) throw insertError;
+      const { error } = await supabase.from("purchases").insert(rows);
+      if (error) throw error;
 
       navigate("/");
     } catch (error) {
-      console.error(error);
-      alert(error.message || "저장 중 오류가 발생했습니다.");
+      console.error("에러 발생:", error);
+      alert(error.message);
     } finally {
       setLoading(false);
     }

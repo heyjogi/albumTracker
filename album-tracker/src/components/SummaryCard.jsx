@@ -3,14 +3,14 @@ import "./SummaryCard.css";
 export default function SummaryCard({ list }) {
   if (!list) return null;
 
-  const SHIPPING_DIVISION_FACTOR = 4;
-
   const totalExpenditure = list.reduce((acc, curr) => {
-    const isTeamPurchase = !!(curr.team_id || curr.public_team_id);
+    const unitPrice = curr.price || 0;
+    const unitShipping = curr.shipping_fee || 0;
+    const unitDiscount = curr.shipping_discount || 0; // 쪼개진 할인액
+    const qty = curr.quantity || 1;
 
-    const itemShipping = curr.shipping_fee || 0;
-
-    return acc + curr.price * curr.quantity + itemShipping;
+    // (개당 가격 + 개당 배송비 - 개당 할인액) * 수량
+    return acc + (unitPrice + unitShipping - unitDiscount) * qty;
   }, 0);
 
   const albumCounts = {};
@@ -22,6 +22,7 @@ export default function SummaryCard({ list }) {
   const sortedAlbums = Object.entries(albumCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
+
   const maxCount = sortedAlbums.length > 0 ? sortedAlbums[0][1] : 1;
 
   return (
