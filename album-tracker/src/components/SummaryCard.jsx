@@ -3,15 +3,29 @@ import "./SummaryCard.css";
 export default function SummaryCard({ list }) {
   if (!list) return null;
 
-  const totalExpenditure = list.reduce((acc, curr) => {
-    const unitPrice = curr.price || 0;
-    const unitShipping = curr.shipping_fee || 0;
-    const unitDiscount = curr.shipping_discount || 0; // 쪼개진 할인액
-    const qty = curr.quantity || 1;
+  const { totalExpenditure, settledAmount, unSettledAmount } = list.reduce(
+    (acc, curr) => {
+      const unitPrice = curr.price || 0;
+      const unitShipping = curr.shipping_fee || 0;
+      const unitDiscount = curr.shipping_discount || 0;
+      const qty = curr.quantity || 1;
 
-    // (개당 가격 + 개당 배송비 - 개당 할인액) * 수량
-    return acc + (unitPrice + unitShipping - unitDiscount) * qty;
-  }, 0);
+      // (개당 가격 + 개당 배송비 - 개당 할인액) * 수량
+      const itemTotal = (unitPrice + unitShipping - unitDiscount) * qty;
+
+      acc.totalExpenditure += itemTotal;
+
+      // 정산 여부에 따른 합산
+      if (curr.is_settled) {
+        acc.settledAmount += itemTotal;
+      } else {
+        acc.unSettledAmount += itemTotal;
+      }
+
+      return acc;
+    },
+    { totalExpenditure: 0, settledAmount: 0, unSettledAmount: 0 },
+  );
 
   const albumCounts = {};
   list.forEach((v) => {
@@ -33,6 +47,23 @@ export default function SummaryCard({ list }) {
           <h2 className="sc-total-value">
             ₩{totalExpenditure.toLocaleString()}
           </h2>
+          <div className="sc-sub-stats">
+            <div className="sc-sub-item">
+              <span className="sc-sub-label">정산 완료</span>
+              <span className="sc-sub-value settled">
+                ₩{settledAmount.toLocaleString()}
+              </span>
+            </div>
+            <div className="sc-sub-divider"></div>
+            <div className="sc-sub-item">
+              <span className="sc-sub-label">미정산</span>
+              <span className="sc-sub-value unsettled">
+                ₩{unSettledAmount.toLocaleString()}
+              </span>
+            </div>
+          </div>
+          <div className="sc-deco-1"></div>
+          <div className="sc-deco-2"></div>
         </div>
         <div className="sc-deco-1"></div>
         <div className="sc-deco-2"></div>

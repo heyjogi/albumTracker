@@ -150,7 +150,7 @@ export default function PurchaseItem({ item, refresh }) {
           </div>
 
           {/* 금액 줄 */}
-          <div className="pi-meta pi-meta-price">금액: {price}</div>
+          <div className="pi-meta pi-meta-price">금액: {price}원</div>
 
           {/* 배송비 & 할인 줄 */}
           {(displayShippingFee > 0 || displayDiscount > 0) && (
