@@ -654,29 +654,26 @@ export default function CreatePurchase() {
               return (
                 <div className="bg-brand-50 p-3 rounded-xl border border-brand-100">
                   <p className="text-[12px] text-brand-700 font-medium">
-                    ✨ 인당 예상 금액 (총 {totalMembers}명)
+                    ✨ 인당 예상 금액 (총 4명)
                   </p>
                   <div className="flex justify-between text-[11px] text-brand-600 mt-1">
                     <span>
                       배송비: +
                       {Math.floor(
-                        (form.shipping_fee || 0) / totalMembers,
+                        (form.shipping_fee || 0) / 4,
                       ).toLocaleString()}
                       원
                     </span>
                     <span>
                       할인: -
-                      {Math.floor(
-                        (form.discount || 0) / totalMembers,
-                      ).toLocaleString()}
-                      원
+                      {Math.floor((form.discount || 0) / 4).toLocaleString()}원
                     </span>
                     <span className="font-bold">
                       합계:{" "}
                       {(
                         Number(form.price) +
-                        Math.floor((form.shipping_fee || 0) / totalMembers) -
-                        Math.floor((form.discount || 0) / totalMembers)
+                        Math.floor((form.shipping_fee || 0) / 4) -
+                        Math.floor((form.discount || 0) / 4)
                       ).toLocaleString()}
                       원
                     </span>
