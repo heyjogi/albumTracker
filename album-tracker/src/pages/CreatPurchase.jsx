@@ -345,16 +345,20 @@ export default function CreatePurchase() {
         selectedMemberIds.includes(m.id),
       );
       const nCount = filteredMembers.length;
-
       if (nCount === 0) throw new Error("등록할 멤버가 없습니다.");
 
       // 2. N분빵 계산 로직 (기존과 동일)
+      const SHIPPING_DIVISION_FACTOR = 4;
       let shippingPerPerson = 0;
       let discountPerPerson = 0;
 
       if (form.team_id) {
-        shippingPerPerson = Math.floor(totalShipping / nCount);
-        discountPerPerson = Math.floor(totalDiscount / nCount);
+        shippingPerPerson = Math.floor(
+          totalShipping / SHIPPING_DIVISION_FACTOR,
+        );
+        discountPerPerson = Math.floor(
+          totalDiscount / SHIPPING_DIVISION_FACTOR,
+        );
       } else {
         shippingPerPerson = totalShipping;
         discountPerPerson = totalDiscount;
