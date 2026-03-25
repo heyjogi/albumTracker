@@ -68,7 +68,7 @@ export default function CreatePurchase() {
 
       const { data: members } = await supabase
         .from("safe_team_members")
-        .select("*")
+        .select("team_name, member_name")
         .eq("public_team_id", firstTeam.public_team_id);
 
       const loaded = sortMembers(members || []);
@@ -118,7 +118,9 @@ export default function CreatePurchase() {
     if (storeId && store?.internal_store_id) {
       const { data: albumsData } = await supabase
         .from("safe_store_albums")
-        .select("*")
+        .select(
+          "public_album_id, internal_album_id, store_id, album_name, event_name, price, event_end_at",
+        )
         .eq("store_id", store.internal_store_id);
 
       setAlbums(albumsData || []);
@@ -138,7 +140,7 @@ export default function CreatePurchase() {
         // 해당 앨범의 멤버 로드
         const { data: members } = await supabase
           .from("album_members")
-          .select("*")
+          .select("id, member_name, event_image_url")
           .eq("album_id", album.internal_album_id);
 
         const loaded = sortMembers(members || []);
@@ -149,7 +151,7 @@ export default function CreatePurchase() {
         if (currentTeamId) {
           const { data: teamData } = await supabase
             .from("safe_team_members")
-            .select("*")
+            .select("team_name, member_name")
             .eq("public_team_id", currentTeamId);
 
           const sortedTeam = sortMembers(teamData || []);
@@ -222,7 +224,7 @@ export default function CreatePurchase() {
     // 5. 앨범 멤버 로드
     const { data: members } = await supabase
       .from("album_members")
-      .select("*")
+      .select("member_name, event_image_url")
       .eq("album_id", album.internal_album_id);
 
     const loaded = sortMembers(members || []);
@@ -261,7 +263,7 @@ export default function CreatePurchase() {
       // 내가 담당하는 멤버 (기존 로직)
       const { data } = await supabase
         .from("safe_team_members")
-        .select("*")
+        .select("id, team_name, member_name")
         .eq("public_team_id", teamId);
 
       const loaded = sortMembers(data || []);
