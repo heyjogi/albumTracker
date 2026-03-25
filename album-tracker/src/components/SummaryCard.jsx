@@ -8,11 +8,7 @@ export default function SummaryCard({ list }) {
   const totalExpenditure = list.reduce((acc, curr) => {
     const isTeamPurchase = !!(curr.team_id || curr.public_team_id);
 
-    const itemShipping = curr.shipping_fee
-      ? isTeamPurchase
-        ? curr.shipping_fee / SHIPPING_DIVISION_FACTOR
-        : curr.shipping_fee
-      : 0;
+    const itemShipping = curr.shipping_fee || 0;
 
     return acc + curr.price * curr.quantity + itemShipping;
   }, 0);
