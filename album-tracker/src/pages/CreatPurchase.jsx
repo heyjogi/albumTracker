@@ -92,7 +92,6 @@ export default function CreatePurchase() {
 
   const handleStoreChange = async (e) => {
     const storeId = e.target.value;
-    // fetchOptions에서 이미 불러온 stores 목록에서 선택된 스토어를 찾습니다.
     const store = stores.find((s) => s.public_store_id === storeId);
 
     // 1. 폼 데이터 초기화 및 배송비/할인액 설정
@@ -114,7 +113,7 @@ export default function CreatePurchase() {
     setAlbumMembers([]);
     setSelectedMemberIds([]);
 
-    // 3. 앨범 목록 로드 (store.internal_store_id 사용)
+    // 3. 앨범 목록 로드
     if (storeId && store?.internal_store_id) {
       const { data: albumsData } = await supabase
         .from("safe_store_albums")
@@ -125,7 +124,7 @@ export default function CreatePurchase() {
 
       setAlbums(albumsData || []);
 
-      // 앨범이 딱 1개라면 자동으로 선택해주는 편의 기능 (기존 로직 유지)
+      // 앨범이 딱 1개라면 자동 선택
       if (albumsData && albumsData.length === 1) {
         const album = albumsData[0];
 
@@ -165,10 +164,10 @@ export default function CreatePurchase() {
           setSelectedMemberIds(selectedIds);
           setForm((f) => ({ ...f, quantity: selectedIds.length || 1 }));
         } else {
-          // 개인 구매일 경우 전체 선택
-          const allIds = loaded.map((m) => m.id);
-          setSelectedMemberIds(allIds);
-          setForm((f) => ({ ...f, quantity: allIds.length || 1 }));
+          // 개인 구매일 경우
+          // const allIds = loaded.map((m) => m.id);
+          setSelectedMemberIds([]);
+          setForm((f) => ({ ...f, quantity: 0 }));
         }
       }
     }

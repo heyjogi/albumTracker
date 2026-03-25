@@ -54,7 +54,6 @@ export default function PurchaseItem({ item, refresh }) {
   const eventName = item.event_name ? `(${item.event_name})` : "";
   const dday = getDday(item.event_end_at);
 
-  // 원래 잘 지워지던 방식(internal_purchase_id 사용)으로 복구
   const toggleSettled = async () => {
     const idToUpdate = item.internal_purchase_id;
     if (!idToUpdate) return;
@@ -109,10 +108,10 @@ export default function PurchaseItem({ item, refresh }) {
 
   const isPersonal = !item.public_team_id;
 
-  // 배송비 및 할인액 계산 로직 (이 부분만 조기님 요구사항대로 유지)
   const quantity = item.quantity || 1;
   const displayShippingFee = item.shipping_fee || 0;
   const displayDiscount = item.shipping_discount || 0;
+  const price = item.price;
 
   return (
     <div className={`pi-card ${isPersonal ? "is-personal" : "is-team"}`}>
@@ -150,33 +149,40 @@ export default function PurchaseItem({ item, refresh }) {
             <span className="pi-store">{storeName}</span>
           </div>
 
-          <div className="pi-meta">
-            <span className="pi-qty">수량: {quantity}</span>
-            {displayShippingFee > 0 && (
-              <>
-                <span className="pi-dot">·</span>
+          {/* 금액 줄 */}
+          <div className="pi-meta pi-meta-price">금액: {price}</div>
+
+          {/* 배송비 & 할인 줄 */}
+          {(displayShippingFee > 0 || displayDiscount > 0) && (
+            <div className="pi-meta pi-meta-delivery">
+              {displayShippingFee > 0 && (
                 <span className="pi-shipping">
                   배송비 {displayShippingFee.toLocaleString()}원
                 </span>
-              </>
-            )}
-            {displayDiscount > 0 && (
-              <>
+              )}
+              {displayShippingFee > 0 && displayDiscount > 0 && (
                 <span className="pi-dot">·</span>
+              )}
+              {displayDiscount > 0 && (
                 <span className="pi-discount">
                   할인 -{displayDiscount.toLocaleString()}원
                 </span>
-              </>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
+          {/* 응모마감 줄 */}
           {item.event_end_at && (
-            <div className="text-[11px] text-slate-400 mt-0.5 tracking-tight">
+            <div className="pi-meta pi-meta-deadline">
               응모마감 | {formatEndDate(item.event_end_at)}
             </div>
           )}
+
+          {/* D-Day 태그 */}
           {dday && (
-            <span className={`pi-dday ${dday.color}`}>{dday.label}</span>
+            <div className="pi-dday-container">
+              <span className={`pi-dday ${dday.color}`}>{dday.label}</span>
+            </div>
           )}
         </div>
       </div>

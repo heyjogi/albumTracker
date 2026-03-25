@@ -18,9 +18,7 @@
 
 .pi-member-group {
   @apply flex flex-col items-center gap-1 shrink-0;
-  /* 세로 정렬, 중앙 정렬 */
   width: 56px;
-  /* 이미지 너비에 맞춰 고정 */
 }
 
 .pi-img-pl {
@@ -44,13 +42,9 @@
 .pi-member-name {
   @apply text-xs font-bold text-slate-700 shrink-0 text-center;
   white-space: nowrap;
-  /* 글자가 꺾이지 않게 */
   width: 100%;
-  /* 그룹 내 너비 꽉 채우기 */
   overflow: hidden;
-  /* 혹시 이름이 길면 줄바꿈 방지 */
   text-overflow: ellipsis;
-  /* ... 처리 */
 }
 
 .pi-details {
@@ -70,20 +64,24 @@
 }
 
 .pi-meta {
-  @apply flex items-center gap-1.5 mt-1.5 text-[11px] text-slate-500;
+  @apply flex items-center gap-1.5 mt-1.5 text-[11px];
   white-space: nowrap;
 }
 
-.pi-qty {
-  @apply font-medium shrink-0;
+.pi-meta-price {
+  @apply mt-2 font-medium text-brand-600;
 }
 
 .pi-dot {
-  @apply text-slate-300;
+  @apply text-slate-300 text-slate-500;
 }
 
 .pi-shipping {
-  @apply font-medium shrink-0;
+  @apply font-medium shrink-0 text-slate-500;
+}
+
+.pi-discount {
+  @apply font-medium shrink-0 text-slate-500;
 }
 
 .pi-dday {
