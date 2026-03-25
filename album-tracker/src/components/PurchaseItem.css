@@ -1,175 +1,183 @@
 @reference "../index.css";
 
 .pi-card {
-    @apply bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between relative hover:shadow-md transition-shadow;
+  @apply bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between relative hover:shadow-md transition-shadow;
+}
+
+.pi-card.is-team {
+  @apply bg-white border-slate-100;
+}
+
+.pi-card.is-personal {
+  @apply bg-brand-950 border-slate-100 shadow-sm;
 }
 
 .pi-left-wrap {
-    @apply flex items-center gap-3 flex-1 min-w-0;
+  @apply flex items-center gap-3 flex-1 min-w-0;
 }
 
 .pi-member-group {
-    @apply flex flex-col items-center gap-1 shrink-0;
-    /* 세로 정렬, 중앙 정렬 */
-    width: 56px;
-    /* 이미지 너비에 맞춰 고정 */
+  @apply flex flex-col items-center gap-1 shrink-0;
+  /* 세로 정렬, 중앙 정렬 */
+  width: 56px;
+  /* 이미지 너비에 맞춰 고정 */
 }
 
 .pi-img-pl {
-    @apply w-13 h-20 bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center shrink-0;
-    position: relative;
+  @apply w-13 h-20 bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center shrink-0;
+  position: relative;
 }
 
 .pi-img-photo {
-    @apply w-full h-full object-cover block;
+  @apply w-full h-full object-cover block;
 }
 
 .pi-img-placeholder {
-    @apply w-full h-full flex items-center justify-center text-xl font-bold;
-    background: linear-gradient(135deg, theme('colors.brand.100'), theme('colors.brand.200'));
-    color: theme('colors.brand.600');
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  @apply w-full h-full flex items-center justify-center text-xl font-bold;
+  background: theme("colors.slate.100");
+  color: theme("colors.brand.600");
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pi-member-name {
-    @apply text-xs font-bold text-slate-700 shrink-0 text-center;
-    white-space: nowrap;
-    /* 글자가 꺾이지 않게 */
-    width: 100%;
-    /* 그룹 내 너비 꽉 채우기 */
-    overflow: hidden;
-    /* 혹시 이름이 길면 줄바꿈 방지 */
-    text-overflow: ellipsis;
-    /* ... 처리 */
+  @apply text-xs font-bold text-slate-700 shrink-0 text-center;
+  white-space: nowrap;
+  /* 글자가 꺾이지 않게 */
+  width: 100%;
+  /* 그룹 내 너비 꽉 채우기 */
+  overflow: hidden;
+  /* 혹시 이름이 길면 줄바꿈 방지 */
+  text-overflow: ellipsis;
+  /* ... 처리 */
 }
 
 .pi-details {
-    @apply min-w-0 flex-1;
+  @apply min-w-0 flex-1;
 }
 
 .pi-title {
-    @apply font-bold text-slate-800 line-clamp-1;
+  @apply font-bold text-slate-800 line-clamp-1;
 }
 
 .pi-tags {
-    @apply flex items-center gap-2 mt-1 flex-wrap;
+  @apply flex items-center gap-2 mt-1 flex-wrap;
 }
 
 .pi-store {
-    @apply text-xs font-medium text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md;
+  @apply text-xs font-medium text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md;
 }
 
 .pi-meta {
-    @apply flex items-center gap-1.5 mt-1.5 text-[11px] text-slate-500;
-    white-space: nowrap;
+  @apply flex items-center gap-1.5 mt-1.5 text-[11px] text-slate-500;
+  white-space: nowrap;
 }
 
 .pi-qty {
-    @apply font-medium shrink-0;
+  @apply font-medium shrink-0;
 }
 
 .pi-dot {
-    @apply text-slate-300;
+  @apply text-slate-300;
 }
 
 .pi-shipping {
-    @apply font-medium shrink-0;
+  @apply font-medium shrink-0;
 }
 
 .pi-dday {
-    @apply mt-1.5 inline-block text-xs font-bold px-2 py-0.5 rounded-md;
+  @apply mt-1.5 inline-block text-xs font-bold px-2 py-0.5 rounded-md;
 }
 
 .pi-right-wrap {
-    @apply flex items-center gap-2 shrink-0;
+  @apply flex items-center gap-2 shrink-0;
 }
 
 .pi-badges {
-    @apply flex flex-col gap-3 items-end;
+  @apply flex flex-col gap-3 items-end;
 }
 
 .pi-menu-btn {
-    @apply p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50;
+  @apply p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50;
 }
 
 .pi-menu-icon {
-    @apply w-5 h-5;
+  @apply w-5 h-5;
 }
 
 .pi-pop-wrap {
-    @apply absolute right-4 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden;
+  @apply absolute right-4 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden;
 }
 
 .pi-pop-bottom {
-    @apply top-16 mt-2;
+  @apply top-16 mt-2;
 }
 
 .pi-pop-top {
-    @apply bottom-16 mb-2;
+  @apply bottom-16 mb-2;
 }
 
 .pi-pop-header {
-    @apply p-4 border-b border-slate-50 flex justify-between items-center;
+  @apply p-4 border-b border-slate-50 flex justify-between items-center;
 }
 
 .pi-pop-title {
-    @apply font-semibold text-sm;
+  @apply font-semibold text-sm;
 }
 
 .pi-pop-close {
-    @apply text-slate-400 hover:text-slate-600;
+  @apply text-slate-400 hover:text-slate-600;
 }
 
 .pi-pop-content {
-    @apply p-4 space-y-4;
+  @apply p-4 space-y-4;
 }
 
 .pi-toggle-row {
-    @apply flex items-center justify-between;
+  @apply flex items-center justify-between;
 }
 
 .pi-toggle-label {
-    @apply text-sm font-medium;
+  @apply text-sm font-medium;
 }
 
 .pi-toggle-track {
-    @apply w-12 h-6 rounded-full transition-colors relative;
+  @apply w-12 h-6 rounded-full transition-colors relative;
 }
 
 .pi-toggle-track-active {
-    @apply bg-brand-500;
+  @apply bg-brand-500;
 }
 
 .pi-toggle-track-inactive {
-    @apply bg-slate-100;
+  @apply bg-slate-100;
 }
 
 .pi-toggle-knob {
-    @apply absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform;
+  @apply absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform;
 }
 
 .pi-toggle-knob-active {
-    @apply translate-x-6;
+  @apply translate-x-6;
 }
 
 .pi-divider {
-    @apply border-t border-slate-100 pt-3;
+  @apply border-t border-slate-100 pt-3;
 }
 
 .pi-btn-del {
-    @apply w-full py-2 rounded-xl text-sm font-semibold transition-colors whitespace-pre-line;
+  @apply w-full py-2 rounded-xl text-sm font-semibold transition-colors whitespace-pre-line;
 }
 
 .pi-btn-del-confirm {
-    @apply bg-rose-500 text-white hover:bg-rose-600;
+  @apply bg-rose-500 text-white hover:bg-rose-600;
 }
 
 .pi-btn-del-normal {
-    @apply bg-rose-50 text-rose-500 hover:bg-rose-100;
+  @apply bg-rose-50 text-rose-500 hover:bg-rose-100;
 }
 
 .pi-btn-cancel {
-    @apply w-full mt-2 py-2 rounded-xl text-sm text-slate-400 hover:text-slate-600;
+  @apply w-full mt-2 py-2 rounded-xl text-sm text-slate-400 hover:text-slate-600;
 }

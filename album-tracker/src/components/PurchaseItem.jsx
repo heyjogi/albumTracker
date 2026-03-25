@@ -108,6 +108,8 @@ export default function PurchaseItem({ item, refresh }) {
 
   const isPersonal = !item.public_team_id;
 
+  const cardClass = `pi-card ${isPersonal ? "is-personal" : "is-team"}`;
+
   const displayShippingFee =
     item.shipping_fee > 0
       ? item.public_team_id
@@ -116,7 +118,7 @@ export default function PurchaseItem({ item, refresh }) {
       : 0;
 
   return (
-    <div className="pi-card">
+    <div className={`pi-card ${isPersonal ? "is-personal" : "is-team"}`}>
       <div className="pi-left-wrap">
         <div className="pi-member-group">
           {/* 1. 이미지 영역 */}
@@ -133,17 +135,26 @@ export default function PurchaseItem({ item, refresh }) {
               </span>
             )}
           </div>
-
-          {/* 2. 멤버 이름 (이미지 밑으로 이동) */}
+          {/* 2. 멤버 이름 */}
           <span className="pi-member-name">{item.member_name}</span>
         </div>
+
         <div className="pi-details">
-          <h3 className="pi-title">
-            {albumName} {eventName}
-          </h3>
+          <div className="flex items-center gap-1.5 mb-1">
+            {!isPersonal && (
+              <span className="text-[10px] bg-brand-500 text-white px-1.5 py-0.5 rounded-md font-bold shrink-0">
+                분철
+              </span>
+            )}
+            <h3 className="pi-title">
+              {albumName} {eventName}
+            </h3>
+          </div>
+
           <div className="pi-tags">
             <span className="pi-store">{storeName}</span>
           </div>
+
           <div className="pi-meta">
             <span className="pi-qty">수량: {item.quantity}</span>
             {displayShippingFee > 0 && (
@@ -155,6 +166,7 @@ export default function PurchaseItem({ item, refresh }) {
               </>
             )}
           </div>
+
           {item.event_end_at && (
             <div className="text-[11px] text-slate-400 mt-0.5 tracking-tight">
               응모마감 | {formatEndDate(item.event_end_at)}
@@ -166,6 +178,7 @@ export default function PurchaseItem({ item, refresh }) {
         </div>
       </div>
 
+      {/* 오른쪽 상태 배지 및 메뉴 버튼 (기존과 동일) */}
       <div className="pi-right-wrap">
         <div className="pi-badges">
           <StatusBadge
@@ -192,7 +205,6 @@ export default function PurchaseItem({ item, refresh }) {
           </svg>
         </button>
       </div>
-
       {isMenuOpen && (
         <div
           className={`pi-pop-wrap ${popPosition === "top" ? "pi-pop-top" : "pi-pop-bottom"}`}
