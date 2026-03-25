@@ -110,12 +110,7 @@ export default function PurchaseItem({ item, refresh }) {
 
   const cardClass = `pi-card ${isPersonal ? "is-personal" : "is-team"}`;
 
-  const displayShippingFee =
-    item.shipping_fee > 0
-      ? item.public_team_id
-        ? item.shipping_fee / SHIPPING_DIVISION_FACTOR
-        : item.shipping_fee
-      : 0;
+  const displayShippingFee = item.shipping_fee || 0;
 
   return (
     <div className={`pi-card ${isPersonal ? "is-personal" : "is-team"}`}>
