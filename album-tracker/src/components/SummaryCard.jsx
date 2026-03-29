@@ -6,8 +6,8 @@ export default function SummaryCard({ list }) {
   const { totalExpenditure, settledAmount, unSettledAmount } = list.reduce(
     (acc, curr) => {
       const unitPrice = curr.price || 0;
-      const unitShipping = curr.shipping_fee || 0;
-      const unitDiscount = curr.shipping_discount || 0;
+      const unitShipping = Math.round(curr.shipping_fee || 0);
+      const unitDiscount = Math.round(curr.shipping_discount || 0);
       const qty = curr.quantity || 1;
 
       // (개당 가격 + 개당 배송비 - 개당 할인액) * 수량

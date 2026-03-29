@@ -109,8 +109,8 @@ export default function PurchaseItem({ item, refresh }) {
   const isPersonal = !item.public_team_id;
 
   const quantity = item.quantity || 1;
-  const displayShippingFee = item.shipping_fee || 0;
-  const displayDiscount = item.shipping_discount || 0;
+  const displayShippingFee = Math.round(item.shipping_fee || 0);
+  const displayDiscount = Math.round(item.shipping_discount || 0);
   const price = item.price;
 
   return (

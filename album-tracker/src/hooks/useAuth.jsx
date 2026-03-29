@@ -36,33 +36,29 @@ export const AuthProvider = ({ children }) => {
 
   const checkUserStatus = async (currentUser) => {
     try {
-      // 1. 허용 이메일 확인 (error 객체도 함께 받아서 체크)
+      // 1. 허용 이메일 확인
       const { data: allowedData, error: allowedError } = await supabase
         .from("allowed_emails")
         .select("email")
         .eq("email", currentUser.email)
-        .maybeSingle(); // single() 대신 maybeSingle() 사용 권장 (데이터 없어도 에러 안남)
+        .maybeSingle();
 
       if (!allowedData) {
-        // 허용 리스트에 아예 없는 이메일인 경우
         setIsAllowed(false);
         setProfile(null);
       } else {
-        // 허용된 사용자임!
         setIsAllowed(true);
 
-        // 2. 프로필 조회 (로그인한 유저 ID로 조회)
+        // 2. 프로필 조회 - RLS 정책 우회를 위해 individual_profile_access 정책 활용
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("nickname, created_at")
-          .eq("id", currentUser.id) // safe_view라면 id로 정확히 매칭 필요
-          .maybeSingle();
+          .eq("id", currentUser.id)
+          .single();
 
         if (profileError) {
           console.error("Error fetching profile:", profileError);
         }
-
-        // 데이터가 없으면 null이 들어가고, AuthWrapper가 이걸 보고 setup 페이지로 보냄
         setProfile(profileData || null);
       }
     } catch (err) {
