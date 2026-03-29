@@ -3,7 +3,7 @@ import "./SummaryCard.css";
 export default function SummaryCard({ list }) {
   if (!list) return null;
 
-  const { totalExpenditure, settledAmount, unSettledAmount } = list.reduce(
+  const { totalExpenditure, settledAmount, unSettledAmount, totalQuantity } = list.reduce(
     (acc, curr) => {
       const unitPrice = curr.price || 0;
       const unitShipping = Math.round(curr.shipping_fee || 0);
@@ -14,6 +14,7 @@ export default function SummaryCard({ list }) {
       const itemTotal = (unitPrice + unitShipping - unitDiscount) * qty;
 
       acc.totalExpenditure += itemTotal;
+      acc.totalQuantity += qty;
 
       // 정산 여부에 따른 합산
       if (curr.is_settled) {
@@ -24,19 +25,18 @@ export default function SummaryCard({ list }) {
 
       return acc;
     },
-    { totalExpenditure: 0, settledAmount: 0, unSettledAmount: 0 },
+    { totalExpenditure: 0, settledAmount: 0, unSettledAmount: 0, totalQuantity: 0 },
   );
 
+  // 1. 앨범명 기준으로 모든 수량 통합 집계
   const albumCounts = {};
   list.forEach((v) => {
-    const name = v.album_name || "기타";
-    albumCounts[name] = (albumCounts[name] || 0) + v.quantity;
+    const name = v.album_name || v.event_name || "기타/미지정";
+    const qty = v.quantity || 1;
+    albumCounts[name] = (albumCounts[name] || 0) + qty;
   });
 
-  const sortedAlbums = Object.entries(albumCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3);
-
+  const sortedAlbums = Object.entries(albumCounts).sort((a, b) => b[1] - a[1]);
   const maxCount = sortedAlbums.length > 0 ? sortedAlbums[0][1] : 1;
 
   return (
@@ -72,20 +72,24 @@ export default function SummaryCard({ list }) {
       {sortedAlbums.length > 0 && (
         <div className="sc-stats-card">
           <div className="sc-stats-header">
-            <h3 className="sc-stats-title">앨범 종류별 수량</h3>
-            <svg
-              className="sc-stats-icon"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
+            <div className="flex items-center gap-2">
+              <h3 className="sc-stats-title">앨범 종류별 수량</h3>
+              {/* 총 수량 뱃지 */}
+              <span className="bg-brand-100 text-brand-600 text-[11px] px-2 py-0.5 rounded-full font-bold">
+                총 {totalQuantity}개
+              </span>
+            </div>
+            <svg className="sc-stats-icon" fill="currentColor" viewBox="0 0 20 20">
               <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
             </svg>
           </div>
+
           <div className="sc-stats-list">
             {sortedAlbums.map(([name, count], idx) => {
-              const colors = ["bg-brand-500", "bg-emerald-500", "bg-amber-500"];
+              const colors = ["bg-brand-500", "bg-emerald-500", "bg-amber-500", "bg-purple-500"];
               const color = colors[idx % colors.length];
               const percentage = Math.max((count / maxCount) * 100, 10);
+
               return (
                 <div key={name} className="sc-stat-item">
                   <span className="sc-stat-name">{name}</span>
@@ -95,7 +99,7 @@ export default function SummaryCard({ list }) {
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
-                  <span className="sc-stat-count">{count}</span>
+                  <span className="sc-stat-count">{count}개</span>
                 </div>
               );
             })}
