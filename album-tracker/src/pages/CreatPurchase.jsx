@@ -143,6 +143,7 @@ export default function CreatePurchase() {
           album_id: album.public_album_id,
           album_name: album.album_name,
           event_name: album.event_name || "",
+          event_end_at: album.event_end_at || null,
           price: Number(album.price) || 0,
         }));
 
@@ -224,6 +225,7 @@ export default function CreatePurchase() {
       album_id: albumId,
       album_name: album.album_name,
       event_name: album.event_name || "",
+      event_end_at: album.event_end_at || null,
       price: album.price,
     }));
 
@@ -343,8 +345,9 @@ export default function CreatePurchase() {
       const DIVISION_FACTOR = 4;
 
       const selectedStore = stores.find((s) => s.public_store_id === form.store_id);
-      const storeInternalId = selectedStore?.internal_store_id;
+      const storeInternalId = selectedStore?.internal_store_id || null;
       const teamInternalId = teams.find((t) => t.public_team_id === form.team_id)?.internal_team_id || null;
+      const albumInternalId = albums.find((a) => a.public_album_id === form.album_id)?.internal_album_id || null;
 
       let rows = [];
 
@@ -366,10 +369,11 @@ export default function CreatePurchase() {
             user_id: tm.user_id, // 각 멤버 담당자의 user_id
             team_id: teamInternalId,
             store_id: storeInternalId,
-            album_id: member.album_id,
+            album_id: albumInternalId,
             store_name: form.store_name,
             album_name: form.album_name,
             event_name: form.event_name,
+            event_end_at: form.event_end_at || null,
             price: parseFloat(form.price) || 0,
             quantity: 1,
             member_name: member.member_name,
@@ -404,10 +408,11 @@ export default function CreatePurchase() {
           user_id: user.id, // 본인
           team_id: teamInternalId,
           store_id: storeInternalId,
-          album_id: member.album_id,
+          album_id: albumInternalId,
           store_name: form.store_name,
           album_name: form.album_name,
           event_name: form.event_name,
+          event_end_at: form.event_end_at || null,
           price: parseFloat(form.price) || 0,
           quantity: 1, // 각 아이템은 항상 수량 1
           member_name: member.member_name,
