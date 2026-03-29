@@ -51,8 +51,16 @@
   @apply min-w-0 flex-1;
 }
 
+.pi-title-row {
+  @apply flex items-center gap-1.5 mb-1;
+}
+
 .pi-title {
   @apply font-bold text-slate-800 line-clamp-1;
+}
+
+.pi-badge-split {
+  @apply text-[10px] bg-brand-500 text-white px-1.5 py-0.5 rounded-md font-bold shrink-0;
 }
 
 .pi-tags {
@@ -85,7 +93,35 @@
 }
 
 .pi-dday {
-  @apply mt-1.5 inline-block text-xs font-bold px-2 py-0.5 rounded-md;
+  @apply inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold;
+}
+
+.pi-dday-zero {
+  @apply text-rose-600 bg-rose-50;
+}
+
+.pi-dday-passed {
+  @apply text-slate-500 bg-slate-100;
+}
+
+.pi-dday-close {
+  @apply text-orange-600 bg-orange-50;
+}
+
+.pi-dday-normal {
+  @apply text-brand-600 bg-brand-50;
+}
+
+.pi-meta-deadline-row {
+  @apply flex items-center gap-1.5 mt-1.5;
+}
+
+.pi-deadline-divider {
+  @apply text-slate-300;
+}
+
+.pi-deadline-date {
+  @apply text-slate-500 text-[11px] font-medium tracking-tight;
 }
 
 .pi-right-wrap {

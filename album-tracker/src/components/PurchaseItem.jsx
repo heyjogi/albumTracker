@@ -3,27 +3,34 @@ import StatusBadge from "./StatusBadge";
 import { supabase } from "../lib/supabase";
 import "./PurchaseItem.css";
 
+function parseLocalDate(dateStr) {
+  if (!dateStr) return null;
+  // DB에서 내려오는 "2024-10-31T23:59:00+00:00" 형태에서 시간대(UTC)를 무시하고 그대로 로컬 시간으로 파싱
+  const cleanStr = dateStr.split("+")[0].replace("Z", "");
+  return new Date(cleanStr);
+}
+
 function getDday(dateStr) {
   if (!dateStr) return null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const end = new Date(dateStr);
+  const end = parseLocalDate(dateStr);
   end.setHours(0, 0, 0, 0);
   const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-  if (diff === 0) return { label: "D-DAY", color: "text-rose-600 bg-rose-50" };
+  if (diff === 0) return { label: "D-DAY", color: "pi-dday-zero" };
   if (diff < 0)
     return {
-      label: `D+${Math.abs(diff)}`,
-      color: "text-slate-400 bg-slate-100",
+      label: "응모마감",
+      color: "pi-dday-passed",
     };
   if (diff <= 3)
-    return { label: `D-${diff}`, color: "text-orange-600 bg-orange-50" };
-  return { label: `D-${diff}`, color: "text-brand-600 bg-brand-50" };
+    return { label: `D-${diff}`, color: "pi-dday-close" };
+  return { label: `D-${diff}`, color: "pi-dday-normal" };
 }
 
 function formatEndDate(dateStr) {
   if (!dateStr) return "";
-  const d = new Date(dateStr);
+  const d = parseLocalDate(dateStr);
   const yr = d.getFullYear().toString().slice(2);
   const mo = String(d.getMonth() + 1).padStart(2, "0");
   const da = String(d.getDate()).padStart(2, "0");
@@ -134,9 +141,9 @@ export default function PurchaseItem({ item, refresh }) {
         </div>
 
         <div className="pi-details">
-          <div className="flex items-center gap-1.5 mb-1">
+          <div className="pi-title-row">
             {!isPersonal && (
-              <span className="text-[10px] bg-brand-500 text-white px-1.5 py-0.5 rounded-md font-bold shrink-0">
+              <span className="pi-badge-split">
                 분철
               </span>
             )}
@@ -171,17 +178,16 @@ export default function PurchaseItem({ item, refresh }) {
             </div>
           )}
 
-          {/* 응모마감 줄 */}
-          {item.event_end_at && (
-            <div className="pi-meta pi-meta-deadline">
-              응모마감 | {formatEndDate(item.event_end_at)}
-            </div>
-          )}
-
-          {/* D-Day 태그 */}
-          {dday && (
-            <div className="pi-dday-container">
-              <span className={`pi-dday ${dday.color}`}>{dday.label}</span>
+          {/* 응모마감 & D-Day 표시 (한 줄) */}
+          {item.event_end_at && dday && (
+            <div className="pi-meta pi-meta-deadline-row">
+              <span className={`pi-dday ${dday.color}`}>
+                {dday.label === "응모마감" ? "응모마감" : `마감 ${dday.label}`}
+              </span>
+              <span className="pi-deadline-divider">|</span>
+              <span className="pi-deadline-date">
+                {formatEndDate(item.event_end_at)}
+              </span>
             </div>
           )}
         </div>
