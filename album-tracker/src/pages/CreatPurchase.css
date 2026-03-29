@@ -191,11 +191,9 @@
 /* 이미지 placeholder (이니셜) */
 .cp-member-img-placeholder {
   @apply w-full h-full flex items-center justify-center text-xl font-bold;
-  background: linear-gradient(
-    135deg,
-    theme("colors.brand.100"),
-    theme("colors.brand.200")
-  );
+  background: linear-gradient(135deg,
+      theme("colors.brand.100"),
+      theme("colors.brand.200"));
   color: theme("colors.brand.600");
 }
 
@@ -234,4 +232,46 @@
 /* 분철팀 이름 항상 강조 */
 .cp-member-card-fixed .cp-member-name {
   @apply text-slate-700 font-semibold;
+}
+
+.bulk-register {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.bulk-register-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.bulk-register-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  border: 1px solid #00f0ff;
+  border-radius: 4px;
+}
+
+.bulk-register-checkbox:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #00f0ff;
+}
+
+.bulk-register-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0088aa;
+}
+
+.bulk-register-checkbox:checked+.bulk-register-text {
+  color: #00ccdd;
+}
+
+.bulk-register-desc {
+  font-size: 12px;
+  color: #00ccdd;
+  margin-top: 4px;
+  padding-left: 24px;
 }

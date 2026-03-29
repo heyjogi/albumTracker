@@ -31,6 +31,8 @@ export default function CreatePurchase() {
   const [teamMembers, setTeamMembers] = useState([]);
   const [albumMembers, setAlbumMembers] = useState([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
+  const [isBulkRegister, setIsBulkRegister] = useState(false);
+  const [allTeamMembers, setAllTeamMembers] = useState([]);
 
   const [form, setForm] = useState({
     store_id: "",
@@ -73,6 +75,14 @@ export default function CreatePurchase() {
 
       const loaded = sortMembers(members || []);
       setTeamMembers(loaded);
+
+      // 팀원 전체 데이터
+      const { data: allMembersData } = await supabase
+        .from("team_members")
+        .select("id, user_id, member_name, is_leader")
+        .eq("team_id", firstTeam.internal_team_id);
+      setAllTeamMembers(allMembersData || []);
+
       const totalQty = loaded.reduce((sum, m) => sum + (m.quantity || 1), 0);
       setForm((f) => ({ ...f, quantity: totalQty || 1 }));
     }
@@ -254,6 +264,8 @@ export default function CreatePurchase() {
       team_name: team?.name || "개인",
     }));
     setTeamMembers([]);
+    setAllTeamMembers([]);
+    setIsBulkRegister(false);
 
     if (teamId && team) {
       // 내가 담당하는 멤버 (기존 로직)
@@ -264,6 +276,13 @@ export default function CreatePurchase() {
 
       const loaded = sortMembers(data || []);
       setTeamMembers(loaded);
+
+      // 팀원 전체 데이터
+      const { data: allMembersData } = await supabase
+        .from("team_members")
+        .select("id, user_id, member_name, is_leader")
+        .eq("team_id", team.internal_team_id);
+      setAllTeamMembers(allMembersData || []);
 
       if (albumMembers.length > 0) {
         const teamMemberNames = loaded.map((m) => m.member_name);
@@ -316,63 +335,88 @@ export default function CreatePurchase() {
 
     if (!user?.id) return alert("로그인이 필요합니다.");
     setLoading(true);
-    if (!user?.id) return alert("로그인이 필요합니다.");
-    setLoading(true);
 
     try {
-      // 2. 필터링 로직 재점검
-      // albumMembers의 각 요소가 가진 id와 selectedMemberIds를 비교합니다.
-      const filteredMembers = albumMembers.filter((m) =>
-        selectedMemberIds.includes(m.id),
-      );
-
-      const nCount = filteredMembers.length;
-
-      if (nCount === 0) throw new Error("등록할 멤버를 선택해주세요.");
-
-      // 3. 배송비 및 할인액 계산
-      const DIVISION_FACTOR = 4;
       const rawShipping = parseFloat(form.shipping_fee) || 0;
       const rawDiscount = parseFloat(form.discount) || 0;
+      const DIVISION_FACTOR = 4;
 
-      let finalShip = 0;
-      let finalDisc = 0;
-
-      if (form.team_id && form.team_id !== "") {
-        // 분철팀일 때: (전체 / 4) / 아이템수
-        finalShip = Math.floor(rawShipping / DIVISION_FACTOR / nCount);
-        finalDisc = Math.floor(rawDiscount / DIVISION_FACTOR / nCount);
-      } else {
-        // 개인일 때: 전체 / 아이템수
-        finalShip = Math.floor(rawShipping / nCount);
-        finalDisc = Math.floor(rawDiscount / nCount);
-      }
-
-      // 4. 전송 데이터 생성
-      const selectedStore = stores.find(
-        (s) => s.public_store_id === form.store_id,
-      );
+      const selectedStore = stores.find((s) => s.public_store_id === form.store_id);
       const storeInternalId = selectedStore?.internal_store_id;
+      const teamInternalId = teams.find((t) => t.public_team_id === form.team_id)?.internal_team_id || null;
 
-      const rows = filteredMembers.map((member) => ({
-        user_id: user.id,
-        team_id:
-          teams.find((t) => t.public_team_id === form.team_id)
-            ?.internal_team_id || null,
-        store_id: storeInternalId,
-        album_id: member.album_id,
-        store_name: form.store_name,
-        album_name: form.album_name,
-        event_name: form.event_name,
-        price: parseFloat(form.price) || 0,
-        quantity: 1, // 각 아이템은 항상 수량 1
-        member_name: member.member_name,
-        event_image_url: member.event_image_url || null,
-        shipping_fee: finalShip, // 계산된 값 할당
-        shipping_discount: finalDisc, // 계산된 값 할당
-        is_settled: false,
-        received: false,
-      }));
+      let rows = [];
+
+      if (form.team_id && isBulkRegister) {
+        // 일괄 등록 (팀원 전체)
+        const membersToRegister = albumMembers.filter((am) =>
+          allTeamMembers.some((tm) => tm.member_name === am.member_name)
+        );
+
+        const nCount = membersToRegister.length;
+        if (nCount === 0) throw new Error("등록할 멤버가 없습니다.");
+
+        const finalShip = Math.floor(rawShipping / DIVISION_FACTOR / nCount);
+        const finalDisc = Math.floor(rawDiscount / DIVISION_FACTOR / nCount);
+
+        rows = membersToRegister.map((member) => {
+          const tm = allTeamMembers.find((t) => t.member_name === member.member_name);
+          return {
+            user_id: tm.user_id, // 각 멤버 담당자의 user_id
+            team_id: teamInternalId,
+            store_id: storeInternalId,
+            album_id: member.album_id,
+            store_name: form.store_name,
+            album_name: form.album_name,
+            event_name: form.event_name,
+            price: parseFloat(form.price) || 0,
+            quantity: 1,
+            member_name: member.member_name,
+            event_image_url: member.event_image_url || null,
+            shipping_fee: finalShip,
+            shipping_discount: finalDisc,
+            is_settled: false,
+            received: false,
+          };
+        });
+      } else {
+        // 기존 로직: 선택한 멤버만 등록
+        const filteredMembers = albumMembers.filter((m) =>
+          selectedMemberIds.includes(m.id),
+        );
+
+        const nCount = filteredMembers.length;
+        if (nCount === 0) throw new Error("등록할 멤버를 선택해주세요.");
+
+        let finalShip = 0;
+        let finalDisc = 0;
+
+        if (form.team_id && form.team_id !== "") {
+          finalShip = Math.floor(rawShipping / DIVISION_FACTOR / nCount);
+          finalDisc = Math.floor(rawDiscount / DIVISION_FACTOR / nCount);
+        } else {
+          finalShip = Math.floor(rawShipping / nCount);
+          finalDisc = Math.floor(rawDiscount / nCount);
+        }
+
+        rows = filteredMembers.map((member) => ({
+          user_id: user.id, // 본인
+          team_id: teamInternalId,
+          store_id: storeInternalId,
+          album_id: member.album_id,
+          store_name: form.store_name,
+          album_name: form.album_name,
+          event_name: form.event_name,
+          price: parseFloat(form.price) || 0,
+          quantity: 1, // 각 아이템은 항상 수량 1
+          member_name: member.member_name,
+          event_image_url: member.event_image_url || null,
+          shipping_fee: finalShip, // 계산된 값 할당
+          shipping_discount: finalDisc, // 계산된 값 할당
+          is_settled: false,
+          received: false,
+        }));
+      }
 
       const { error } = await supabase.from("purchases").insert(rows);
       if (error) throw error;
@@ -389,6 +433,12 @@ export default function CreatePurchase() {
   const isPersonal = !form.team_id;
   const allSelected =
     albumMembers.length > 0 && selectedMemberIds.length === albumMembers.length;
+
+  const isCurrentUserLeader = useMemo(() => {
+    if (!form.team_id || allTeamMembers.length === 0) return false;
+    return allTeamMembers.some((m) => m.user_id === user?.id && m.is_leader);
+  }, [form.team_id, allTeamMembers, user?.id]);
+
   const selectClass = "cp-select";
   const inputClass = "cp-input-full";
 
@@ -483,8 +533,30 @@ export default function CreatePurchase() {
           </div>
         </div>
 
+        {/* 일괄 등록 체크박스 (리더전용) */}
+        {isCurrentUserLeader && (
+          <div className="bulk-register">
+            <label className="bulk-register-label">
+              <input
+                type="checkbox"
+                className="bulk-register-checkbox"
+                checked={isBulkRegister}
+                onChange={(e) => setIsBulkRegister(e.target.checked)}
+              />
+              <span className="bulk-register-text">
+                분철팀 일괄 구매 등록
+              </span>
+            </label>
+
+            {isBulkRegister && (
+              <p className="bulk-register-desc">
+              </p>
+            )}
+          </div>
+        )}
+
         {/* 앨범 멤버 */}
-        {filteredDisplayMembers.length > 0 && (
+        {filteredDisplayMembers.length > 0 && !isBulkRegister && (
           <div>
             <div className="cp-member-header">
               <label className="cp-label" style={{ marginBottom: 0 }}>
