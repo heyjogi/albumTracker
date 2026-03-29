@@ -330,6 +330,7 @@ export default function CreatePurchase() {
       setForm((f) => ({ ...f, quantity: allIds.length }));
     }
   };
+
   const submit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
 
@@ -356,8 +357,8 @@ export default function CreatePurchase() {
         const nCount = membersToRegister.length;
         if (nCount === 0) throw new Error("등록할 멤버가 없습니다.");
 
-        const finalShip = Math.floor(rawShipping / DIVISION_FACTOR / nCount);
-        const finalDisc = Math.floor(rawDiscount / DIVISION_FACTOR / nCount);
+        const finalShip = Math.round(rawShipping / DIVISION_FACTOR / nCount);
+        const finalDisc = Math.round(rawDiscount / DIVISION_FACTOR / nCount);
 
         rows = membersToRegister.map((member) => {
           const tm = allTeamMembers.find((t) => t.member_name === member.member_name);
@@ -392,11 +393,11 @@ export default function CreatePurchase() {
         let finalDisc = 0;
 
         if (form.team_id && form.team_id !== "") {
-          finalShip = Math.floor(rawShipping / DIVISION_FACTOR / nCount);
-          finalDisc = Math.floor(rawDiscount / DIVISION_FACTOR / nCount);
+          finalShip = Math.round(rawShipping / DIVISION_FACTOR / nCount);
+          finalDisc = Math.round(rawDiscount / DIVISION_FACTOR / nCount);
         } else {
-          finalShip = Math.floor(rawShipping / nCount);
-          finalDisc = Math.floor(rawDiscount / nCount);
+          finalShip = Math.round(rawShipping / nCount);
+          finalDisc = Math.round(rawDiscount / nCount);
         }
 
         rows = filteredMembers.map((member) => ({
@@ -715,21 +716,21 @@ export default function CreatePurchase() {
                   <div className="flex justify-between text-[11px] text-brand-600 mt-1">
                     <span>
                       배송비: +
-                      {Math.floor(
+                      {Math.round(
                         (form.shipping_fee || 0) / 4,
                       ).toLocaleString()}
                       원
                     </span>
                     <span>
                       할인: -
-                      {Math.floor((form.discount || 0) / 4).toLocaleString()}원
+                      {Math.round((form.discount || 0) / 4).toLocaleString()}원
                     </span>
                     <span className="font-bold">
                       합계:{" "}
                       {(
                         Number(form.price) +
-                        Math.floor((form.shipping_fee || 0) / 4) -
-                        Math.floor((form.discount || 0) / 4)
+                        Math.round((form.shipping_fee || 0) / 4) -
+                        Math.round((form.discount || 0) / 4)
                       ).toLocaleString()}
                       원
                     </span>
