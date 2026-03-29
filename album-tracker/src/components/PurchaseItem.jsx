@@ -46,8 +46,6 @@ export default function PurchaseItem({ item, refresh }) {
   const [popPosition, setPopPosition] = useState("bottom");
   const menuBtnRef = useRef(null);
 
-  const SHIPPING_DIVISION_FACTOR = 4;
-
   useEffect(() => {
     if (isMenuOpen && menuBtnRef.current) {
       const rect = menuBtnRef.current.getBoundingClientRect();
