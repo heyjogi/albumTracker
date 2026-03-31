@@ -52,6 +52,38 @@ export default function CreatePurchase() {
     fetchOptions();
   }, []);
 
+  // 상점의 배송비 무료 기준에 따른 배송비 자동 계산
+  useEffect(() => {
+    if (!form.store_id || stores.length === 0) return;
+    const store = stores.find((s) => s.public_store_id === form.store_id);
+    if (!store) return;
+
+    // 필드명이 thershold로 오타가 있을 수 있는 점을 대비하여 둘 다 체크
+    const threshold = Number(store.free_shipping_threshold || store.free_shipping_thershold || 0);
+    const defaultShipping = Number(store.shipping_fee || 0);
+    
+    let effectiveQuantity = Number(form.quantity || 1);
+    if (form.team_id && isBulkRegister) {
+      const membersToRegister = albumMembers.filter((am) =>
+        allTeamMembers.some((tm) => tm.member_name === am.member_name)
+      );
+      effectiveQuantity = membersToRegister.length || 1;
+    }
+    
+    // 현재 총액 (개당 가격 * 선택된 총 수량)
+    const totalPrice = Number(form.price || 0) * effectiveQuantity;
+
+    let newShippingFee = defaultShipping;
+    if (threshold > 0 && totalPrice >= threshold) {
+      newShippingFee = 0;
+    }
+
+    setForm((prev) => {
+      if (prev.shipping_fee === newShippingFee) return prev;
+      return { ...prev, shipping_fee: newShippingFee };
+    });
+  }, [form.store_id, form.price, form.quantity, form.team_id, isBulkRegister, stores, albumMembers, allTeamMembers]);
+
   const fetchOptions = async () => {
     const [{ data: ss }, { data: ts }] = await Promise.all([
       supabase.from("safe_stores").select("*"),
