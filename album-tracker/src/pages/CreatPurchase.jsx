@@ -53,15 +53,18 @@ export default function CreatePurchase() {
 
 
   const filteredDisplayMembers = useMemo(() => {
+    // 개인 구매면 전체 표시
     if (!form.team_id) {
-      return albumMembers; // 개인 구매면 전체 표시
+      return albumMembers;
     }
 
+    // 팀 선택했지만, 팀 로딩중이거나 담당 멤버가 없을 경우
     if (teamMembers.length === 0) {
-      return []; // 팀 선택했지만, 팀 로딩중이거나 담당 멤버가 없을 경우
+      return [];
     }
 
     const teamMemberNames = teamMembers.map((m) => m.member_name);
+
     // 앨범 멤버 중 우리 분철팀 이름 목록에 포함된 멤버만 필터링
     return albumMembers.filter((am) =>
       teamMemberNames.includes(am.member_name),
@@ -75,10 +78,10 @@ export default function CreatePurchase() {
   // 상점의 배송비 무료 기준에 따른 배송비 자동 계산
   useEffect(() => {
     if (!form.store_id || stores.length === 0) return;
-    const store = stores.find((s) => s.public_store_id === form.store_id);
+    const store = stores.find((s) => s.id === form.store_id);
     if (!store) return;
 
-    const threshold = Number(store.free_shipping_threshold || store.free_shipping_thershold || 0);
+    const threshold = Number(store.free_shipping_threshold || 0);
     const defaultShipping = Number(store.shipping_fee || 0);
 
     // 무료배송 기준 계산용 수량
@@ -88,7 +91,7 @@ export default function CreatePurchase() {
       // 팀 구매: 팀 전체 멤버 수와 앨범 멤버 매칭
       if (teamTotalMembers > 0 && albumMembers.length > 0) {
         // 앨범에 있는 멤버 중 팀 멤버와 매칭되는 수
-        // 일단 teamTotalMembers 사용 (모든 팀 멤버가 앨범에 있다고 가정)
+        // 일단 teamTotalMembers 사용
         effectiveQuantity = Math.min(teamTotalMembers, albumMembers.length);
       } else {
         effectiveQuantity = teamTotalMembers || teamDivisor;
@@ -97,7 +100,6 @@ export default function CreatePurchase() {
       effectiveQuantity = selectedMemberIds.length || 1;
     }
 
-    // 현재 총액 (개당 가격 * 할당된 멤버 수)
     const totalPrice = Number(form.price || 0) * effectiveQuantity;
 
     // 무료배송 기준 금액을 넘으면 배송비 0, 아니면 기본 배송비
@@ -125,20 +127,20 @@ export default function CreatePurchase() {
       const firstTeam = ts[0];
       setForm((f) => ({
         ...f,
-        team_id: firstTeam.public_team_id,
+        team_id: firstTeam.id,
         team_name: firstTeam.name,
       }));
 
       const { data: members } = await supabase
         .from("safe_team_members")
-        .select("team_name, member_name")
-        .eq("public_team_id", firstTeam.public_team_id);
+        .select("member_name")
+        .eq("team_id", firstTeam.id);
 
       const loaded = sortMembers(members || []);
       setTeamMembers(loaded);
 
       const { data: teamInfo } = await supabase.rpc("get_team_purchase_info", {
-        p_team_id: firstTeam.internal_team_id,
+        p_team_id: firstTeam.id,
       });
       setIsCurrentUserLeader(!!teamInfo?.is_leader);
       setTeamDivisor(teamInfo?.divisor || 1);
@@ -151,7 +153,7 @@ export default function CreatePurchase() {
 
   const handleStoreChange = async (e) => {
     const storeId = e.target.value;
-    const store = stores.find((s) => s.public_store_id === storeId);
+    const store = stores.find((s) => s.id === storeId);
 
     // 1. 폼 데이터 초기화 및 배송비/할인액 설정
     setForm((f) => ({
@@ -173,13 +175,13 @@ export default function CreatePurchase() {
     setSelectedMemberIds([]);
 
     // 3. 앨범 목록 로드
-    if (storeId && store?.internal_store_id) {
+    if (storeId) {
       const { data: albumsData } = await supabase
         .from("safe_store_albums")
         .select(
-          "public_album_id, internal_album_id, store_id, album_name, event_name, price, event_end_at",
+          "id, store_id, album_name, event_name, price, event_end_at",
         )
-        .eq("store_id", store.internal_store_id);
+        .eq("store_id", storeId);
 
       setAlbums(albumsData || []);
 
@@ -189,7 +191,7 @@ export default function CreatePurchase() {
 
         setForm((f) => ({
           ...f,
-          album_id: album.public_album_id,
+          album_id: album.id,
           album_name: album.album_name,
           event_name: album.event_name || "",
           event_end_at: album.event_end_at || null,
@@ -200,7 +202,7 @@ export default function CreatePurchase() {
         const { data: members } = await supabase
           .from("album_members")
           .select("id, member_name, event_image_url")
-          .eq("album_id", album.internal_album_id);
+          .eq("album_id", album.id);
 
         const loaded = sortMembers(members || []);
         setAlbumMembers(loaded);
@@ -210,8 +212,8 @@ export default function CreatePurchase() {
         if (currentTeamId) {
           const { data: teamData } = await supabase
             .from("safe_team_members")
-            .select("team_name, member_name")
-            .eq("public_team_id", currentTeamId);
+            .select("member_name")
+            .eq("team_id", currentTeamId);
 
           const sortedTeam = sortMembers(teamData || []);
 
@@ -236,11 +238,9 @@ export default function CreatePurchase() {
   const handleAlbumChange = async (e) => {
     const albumId = e.target.value;
 
-    // 1. 먼저 상태 초기화
     setAlbumMembers([]);
     setSelectedMemberIds([]);
 
-    // 2. 앨범을 선택하지 않은 경우
     if (!albumId) {
       setForm((f) => ({
         ...f,
@@ -255,8 +255,7 @@ export default function CreatePurchase() {
       return;
     }
 
-    // 3. 선택한 앨범 찾기
-    const album = albums.find((a) => a.public_album_id === albumId);
+    const album = albums.find((a) => a.id === albumId);
     if (!album) {
       setForm((f) => ({
         ...f,
@@ -268,7 +267,6 @@ export default function CreatePurchase() {
       return;
     }
 
-    // 4. 앨범 정보로 form 업데이트
     setForm((f) => ({
       ...f,
       album_id: albumId,
@@ -278,16 +276,14 @@ export default function CreatePurchase() {
       price: album.price,
     }));
 
-    // 5. 앨범 멤버 로드
     const { data: members } = await supabase
       .from("album_members")
       .select("id, member_name, event_image_url")
-      .eq("album_id", album.internal_album_id);
+      .eq("album_id", album.id);
 
     const loaded = sortMembers(members || []);
     setAlbumMembers(loaded);
 
-    // 6. 팀 선택 여부에 따라 멤버 선택 처리
     const currentTeamId = form.team_id;
     if (currentTeamId) {
       // 팀 구매: 팀 멤버와 매칭되는 앨범 멤버만 선택
@@ -304,9 +300,10 @@ export default function CreatePurchase() {
       setForm((f) => ({ ...f, quantity: 0 }));
     }
   };
+
   const handleTeamChange = async (e) => {
     const teamId = e.target.value;
-    const team = teams.find((t) => t.public_team_id === teamId);
+    const team = teams.find((t) => t.id === teamId);
     setForm((f) => ({
       ...f,
       team_id: teamId,
@@ -319,11 +316,10 @@ export default function CreatePurchase() {
     setTeamTotalMembers(0);
 
     if (teamId && team) {
-      // 1. 내가 담당하는 멤버 (기존)
       const { data, error } = await supabase
         .from("safe_team_members")
-        .select("team_name, member_name")
-        .eq("public_team_id", teamId);
+        .select("member_name")
+        .eq("team_id", teamId);
 
       if (error) console.error("safe_team_members fetch error:", error);
 
@@ -331,7 +327,7 @@ export default function CreatePurchase() {
       setTeamMembers(loaded);
 
       const { data: teamInfo } = await supabase.rpc("get_team_purchase_info", {
-        p_team_id: team.internal_team_id,
+        p_team_id: team.id,
       });
       setIsCurrentUserLeader(!!teamInfo?.is_leader);
       setTeamDivisor(teamInfo?.divisor || 1);
@@ -389,10 +385,10 @@ export default function CreatePurchase() {
       const rawShipping = parseFloat(form.shipping_fee) || 0;
       const rawDiscount = parseFloat(form.discount) || 0;
 
-      const selectedStore = stores.find((s) => s.public_store_id === form.store_id);
-      const storeInternalId = selectedStore?.internal_store_id || null;
-      const teamInternalId = teams.find((t) => t.public_team_id === form.team_id)?.internal_team_id || null;
-      const albumInternalId = albums.find((a) => a.public_album_id === form.album_id)?.internal_album_id || null;
+      const selectedStore = stores.find((s) => s.id === form.store_id);
+      const storeId = selectedStore?.id || null;
+      const teamId = teams.find((t) => t.id === form.team_id)?.id || null;
+      const albumId = albums.find((a) => a.id === form.album_id)?.id || null;
 
       let rows = [];
 
@@ -401,16 +397,15 @@ export default function CreatePurchase() {
         const { error: bulkError } = await supabase.rpc(
           "register_bulk_purchase",
           {
-            p_team_id: teamInternalId,
-            p_store_id: storeInternalId,
-            p_album_id: albumInternalId,
-            p_quantity: 1, // 각 아이템별 기본 수량
+            p_team_id: teamId,
+            p_store_id: storeId,
+            p_album_id: albumId,
+            p_quantity: 1,
           }
         );
 
         if (bulkError) throw bulkError;
       } else {
-        // 기존 로직: 선택한 멤버만 등록
         const filteredMembers = albumMembers.filter((m) =>
           selectedMemberIds.includes(m.id)
         );
@@ -422,16 +417,16 @@ export default function CreatePurchase() {
         const finalDisc = Math.round(rawDiscount / teamDivisor / nCount);
 
         rows = filteredMembers.map((member) => ({
-          user_id: user.id, // 본인
-          team_id: teamInternalId,
-          store_id: storeInternalId,
-          album_id: albumInternalId,
+          user_id: user.id,
+          team_id: teamId,
+          store_id: storeId,
+          album_id: albumId,
           store_name: form.store_name,
           album_name: form.album_name,
           event_name: form.event_name,
           event_end_at: form.event_end_at || null,
           price: parseFloat(form.price) || 0,
-          quantity: 1, // 각 아이템은 항상 수량 1
+          quantity: 1,// 각 아이템은 항상 수량 1
           member_name: member.member_name,
           event_image_url: member.event_image_url || null,
           shipping_fee: finalShip,
@@ -497,7 +492,7 @@ export default function CreatePurchase() {
             >
               <option value="">구매처를 선택하세요</option>
               {stores.map((s) => (
-                <option key={s.public_store_id} value={s.public_store_id}>
+                <option key={s.id} value={s.id}>
                   {s.name}
                 </option>
               ))}
@@ -523,7 +518,7 @@ export default function CreatePurchase() {
                 >
                   <option value="">앨범을 선택하세요</option>
                   {albums.map((a) => (
-                    <option key={a.public_album_id} value={a.public_album_id}>
+                    <option key={a.id} value={a.id}>
                       {a.album_name}
                       {a.event_name ? ` (${a.event_name})` : ""}
                     </option>
@@ -546,7 +541,7 @@ export default function CreatePurchase() {
             >
               <option value="">개인</option>
               {teams.map((t) => (
-                <option key={t.public_team_id} value={t.public_team_id}>
+                <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
               ))}
@@ -595,7 +590,6 @@ export default function CreatePurchase() {
               )}
             </div>
             <div className="cp-member-scroll">
-              {/* [중요] albumMembers 대신 filteredDisplayMembers를 사용합니다. */}
               {filteredDisplayMembers.map((m) => {
                 const isSelected = selectedMemberIds.includes(m.id);
                 const isDisabled = !isPersonal;
@@ -691,7 +685,7 @@ export default function CreatePurchase() {
                 type="number"
                 className="cp-input-full bg-slate-50"
                 value={form.quantity}
-                readOnly // 멤버 선택 시 자동 계산되므로 수동 수정 방지
+                readOnly
               />
             </div>
           </div>
