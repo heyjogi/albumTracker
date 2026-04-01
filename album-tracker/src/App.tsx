@@ -6,6 +6,7 @@ import NicknameSetup from './pages/NicknameSetup'
 import CreatePurchase from './pages/CreatPurchase'
 import AllPurchases from './pages/AllPurchases'
 import Settings from './pages/Settings'
+import PocaBoard from './pages/PocaBoard'
 import { AuthProvider } from './hooks/useAuth'
 import AuthWrapper from './components/AuthWrapper'
 
@@ -20,6 +21,7 @@ function App() {
             <Route path="/create-purchase" element={<CreatePurchase />} />
             <Route path="/purchases" element={<AllPurchases />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/pocaboard" element={<PocaBoard />} />
             <Route path="/" element={<Main />} />
           </Routes>
         </AuthWrapper>
