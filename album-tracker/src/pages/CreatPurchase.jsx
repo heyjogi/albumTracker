@@ -133,7 +133,7 @@ export default function CreatePurchase() {
 
       const { data: members } = await supabase
         .from("safe_team_members")
-        .select("member_name")
+        .select("member_id, member_name")
         .eq("team_id", firstTeam.id);
 
       const loaded = sortMembers(members || []);
@@ -201,7 +201,7 @@ export default function CreatePurchase() {
         // 해당 앨범의 멤버 로드
         const { data: members } = await supabase
           .from("album_members")
-          .select("id, member_name, event_image_url")
+          .select("id, member_id, member_name, event_image_url")
           .eq("album_id", album.id);
 
         const loaded = sortMembers(members || []);
@@ -212,7 +212,7 @@ export default function CreatePurchase() {
         if (currentTeamId) {
           const { data: teamData } = await supabase
             .from("safe_team_members")
-            .select("member_name")
+            .select("member_id, member_name")
             .eq("team_id", currentTeamId);
 
           const sortedTeam = sortMembers(teamData || []);
@@ -278,7 +278,7 @@ export default function CreatePurchase() {
 
     const { data: members } = await supabase
       .from("album_members")
-      .select("id, member_name, event_image_url")
+      .select("id, member_id, member_name, event_image_url")
       .eq("album_id", album.id);
 
     const loaded = sortMembers(members || []);
@@ -318,7 +318,7 @@ export default function CreatePurchase() {
     if (teamId && team) {
       const { data, error } = await supabase
         .from("safe_team_members")
-        .select("member_name")
+        .select("member_id, member_name")
         .eq("team_id", teamId);
 
       if (error) console.error("safe_team_members fetch error:", error);
@@ -427,6 +427,7 @@ export default function CreatePurchase() {
           event_end_at: form.event_end_at || null,
           price: parseFloat(form.price) || 0,
           quantity: 1,// 각 아이템은 항상 수량 1
+          member_id: member.member_id,
           member_name: member.member_name,
           event_image_url: member.event_image_url || null,
           shipping_fee: finalShip,
