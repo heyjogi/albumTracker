@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
         // 2. 프로필 조회 - RLS 정책 우회를 위해 individual_profile_access 정책 활용
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("nickname, created_at")
+          .select("nickname")
           .eq("id", currentUser.id)
           .single();
 
