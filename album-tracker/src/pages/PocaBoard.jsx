@@ -267,6 +267,9 @@ export default function PocaBoard() {
   }
 
   const handleReset = () => {
+    const ok = window.confirm('초기화 하시겠습니까?');
+    if (!ok) return;
+
     setCardCounts({})
     localStorage.removeItem(STORAGE_KEY)
   }

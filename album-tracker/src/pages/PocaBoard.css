@@ -16,7 +16,7 @@
 }
 
 .poca-header h1 {
-  @apply justify-self-center text-sm font-bold text-brand-500;
+  @apply justify-self-center text-xl font-bold text-brand-500;
 }
 
 .poca-header button:last-child {
