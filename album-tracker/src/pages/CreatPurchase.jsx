@@ -29,10 +29,13 @@ export default function CreatePurchase() {
   const [teams, setTeams] = useState([]);
   const [albums, setAlbums] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [allTeamMembers, setAllTeamMembers] = useState([]);
   const [albumMembers, setAlbumMembers] = useState([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
   const [isBulkRegister, setIsBulkRegister] = useState(false);
-  const [allTeamMembers, setAllTeamMembers] = useState([]);
+  const [isCurrentUserLeader, setIsCurrentUserLeader] = useState(false);
+  const [teamDivisor, setTeamDivisor] = useState(1);
+  const [teamTotalMembers, setTeamTotalMembers] = useState(0);
 
   const [form, setForm] = useState({
     store_id: "",
@@ -48,6 +51,23 @@ export default function CreatePurchase() {
     shipping_fee: 0,
   });
 
+
+  const filteredDisplayMembers = useMemo(() => {
+    if (!form.team_id) {
+      return albumMembers; // 개인 구매면 전체 표시
+    }
+
+    if (teamMembers.length === 0) {
+      return []; // 팀 선택했지만, 팀 로딩중이거나 담당 멤버가 없을 경우
+    }
+
+    const teamMemberNames = teamMembers.map((m) => m.member_name);
+    // 앨범 멤버 중 우리 분철팀 이름 목록에 포함된 멤버만 필터링
+    return albumMembers.filter((am) =>
+      teamMemberNames.includes(am.member_name),
+    );
+  }, [form.team_id, teamMembers, albumMembers]);
+
   useEffect(() => {
     fetchOptions();
   }, []);
@@ -58,21 +78,29 @@ export default function CreatePurchase() {
     const store = stores.find((s) => s.public_store_id === form.store_id);
     if (!store) return;
 
-    // 필드명이 thershold로 오타가 있을 수 있는 점을 대비하여 둘 다 체크
     const threshold = Number(store.free_shipping_threshold || store.free_shipping_thershold || 0);
     const defaultShipping = Number(store.shipping_fee || 0);
-    
-    let effectiveQuantity = Number(form.quantity || 1);
-    if (form.team_id && isBulkRegister) {
-      const membersToRegister = albumMembers.filter((am) =>
-        allTeamMembers.some((tm) => tm.member_name === am.member_name)
-      );
-      effectiveQuantity = membersToRegister.length || 1;
+
+    // 무료배송 기준 계산용 수량
+    let effectiveQuantity = 1;
+
+    if (form.team_id) {
+      // 팀 구매: 팀 전체 멤버 수와 앨범 멤버 매칭
+      if (teamTotalMembers > 0 && albumMembers.length > 0) {
+        // 앨범에 있는 멤버 중 팀 멤버와 매칭되는 수
+        // 일단 teamTotalMembers 사용 (모든 팀 멤버가 앨범에 있다고 가정)
+        effectiveQuantity = Math.min(teamTotalMembers, albumMembers.length);
+      } else {
+        effectiveQuantity = teamTotalMembers || teamDivisor;
+      }
+    } else {
+      effectiveQuantity = selectedMemberIds.length || 1;
     }
-    
-    // 현재 총액 (개당 가격 * 선택된 총 수량)
+
+    // 현재 총액 (개당 가격 * 할당된 멤버 수)
     const totalPrice = Number(form.price || 0) * effectiveQuantity;
 
+    // 무료배송 기준 금액을 넘으면 배송비 0, 아니면 기본 배송비
     let newShippingFee = defaultShipping;
     if (threshold > 0 && totalPrice >= threshold) {
       newShippingFee = 0;
@@ -82,9 +110,10 @@ export default function CreatePurchase() {
       if (prev.shipping_fee === newShippingFee) return prev;
       return { ...prev, shipping_fee: newShippingFee };
     });
-  }, [form.store_id, form.price, form.quantity, form.team_id, isBulkRegister, stores, albumMembers, allTeamMembers]);
+  }, [form.store_id, form.price, form.team_id, stores, teamTotalMembers, albumMembers, teamDivisor, selectedMemberIds]);
 
   const fetchOptions = async () => {
+
     const [{ data: ss }, { data: ts }] = await Promise.all([
       supabase.from("safe_stores").select("*"),
       supabase.from("safe_teams").select("*"),
@@ -108,29 +137,17 @@ export default function CreatePurchase() {
       const loaded = sortMembers(members || []);
       setTeamMembers(loaded);
 
-      // 팀원 전체 데이터
-      const { data: allMembersData } = await supabase
-        .from("team_members")
-        .select("id, user_id, member_name, is_leader")
-        .eq("team_id", firstTeam.internal_team_id);
-      setAllTeamMembers(allMembersData || []);
+      const { data: teamInfo } = await supabase.rpc("get_team_purchase_info", {
+        p_team_id: firstTeam.internal_team_id,
+      });
+      setIsCurrentUserLeader(!!teamInfo?.is_leader);
+      setTeamDivisor(teamInfo?.divisor || 1);
+      setTeamTotalMembers(teamInfo?.total_members || 0);
 
       const totalQty = loaded.reduce((sum, m) => sum + (m.quantity || 1), 0);
-      setForm((f) => ({ ...f, quantity: totalQty || 1 }));
+      setForm((f) => ({ ...f, quantity: totalQty }));
     }
   };
-
-  const filteredDisplayMembers = useMemo(() => {
-    if (!form.team_id || teamMembers.length === 0) {
-      return albumMembers; // 개인 구매거나 팀 로딩 전이면 전체 표시
-    }
-
-    const teamMemberNames = teamMembers.map((m) => m.member_name);
-    // 앨범 멤버 중 우리 분철팀 이름 목록에 포함된 멤버만 필터링
-    return albumMembers.filter((am) =>
-      teamMemberNames.includes(am.member_name),
-    );
-  }, [form.team_id, teamMembers, albumMembers]);
 
   const handleStoreChange = async (e) => {
     const storeId = e.target.value;
@@ -205,7 +222,7 @@ export default function CreatePurchase() {
             .map((m) => m.id);
 
           setSelectedMemberIds(selectedIds);
-          setForm((f) => ({ ...f, quantity: selectedIds.length || 1 }));
+          setForm((f) => ({ ...f, quantity: selectedIds.length }));
         } else {
           // 개인 구매일 경우
           // const allIds = loaded.map((m) => m.id);
@@ -280,15 +297,13 @@ export default function CreatePurchase() {
         .map((m) => m.id);
 
       setSelectedMemberIds(selectedIds);
-      setForm((f) => ({ ...f, quantity: selectedIds.length || 1 }));
+      setForm((f) => ({ ...f, quantity: selectedIds.length }));
     } else {
-      // 개인 구매: 전체 선택
-      const allIds = loaded.map((m) => m.id);
-      setSelectedMemberIds(allIds);
-      setForm((f) => ({ ...f, quantity: allIds.length || 1 }));
+      // 개인 구매: 선택 안함 (유저가 직접 지정)
+      setSelectedMemberIds([]);
+      setForm((f) => ({ ...f, quantity: 0 }));
     }
   };
-
   const handleTeamChange = async (e) => {
     const teamId = e.target.value;
     const team = teams.find((t) => t.public_team_id === teamId);
@@ -298,25 +313,29 @@ export default function CreatePurchase() {
       team_name: team?.name || "개인",
     }));
     setTeamMembers([]);
-    setAllTeamMembers([]);
     setIsBulkRegister(false);
+    setIsCurrentUserLeader(false);
+    setTeamDivisor(1);
+    setTeamTotalMembers(0);
 
     if (teamId && team) {
-      // 내가 담당하는 멤버 (기존 로직)
-      const { data } = await supabase
+      // 1. 내가 담당하는 멤버 (기존)
+      const { data, error } = await supabase
         .from("safe_team_members")
-        .select("id, team_name, member_name")
+        .select("team_name, member_name")
         .eq("public_team_id", teamId);
+
+      if (error) console.error("safe_team_members fetch error:", error);
 
       const loaded = sortMembers(data || []);
       setTeamMembers(loaded);
 
-      // 팀원 전체 데이터
-      const { data: allMembersData } = await supabase
-        .from("team_members")
-        .select("id, user_id, member_name, is_leader")
-        .eq("team_id", team.internal_team_id);
-      setAllTeamMembers(allMembersData || []);
+      const { data: teamInfo } = await supabase.rpc("get_team_purchase_info", {
+        p_team_id: team.internal_team_id,
+      });
+      setIsCurrentUserLeader(!!teamInfo?.is_leader);
+      setTeamDivisor(teamInfo?.divisor || 1);
+      setTeamTotalMembers(teamInfo?.total_members || 0);
 
       if (albumMembers.length > 0) {
         const teamMemberNames = loaded.map((m) => m.member_name);
@@ -326,19 +345,14 @@ export default function CreatePurchase() {
           .map((m) => m.id);
 
         setSelectedMemberIds(selectedIds);
-        setForm((f) => ({ ...f, quantity: selectedIds.length || 1 }));
+        setForm((f) => ({ ...f, quantity: selectedIds.length }));
       } else {
         const totalQty = loaded.reduce((sum, m) => sum + (m.quantity || 1), 0);
-        setForm((f) => ({ ...f, quantity: totalQty || 1 }));
+        setForm((f) => ({ ...f, quantity: totalQty }));
       }
     } else {
-      if (albumMembers.length > 0) {
-        const allIds = albumMembers.map((m) => m.id);
-        setSelectedMemberIds(allIds);
-        setForm((f) => ({ ...f, quantity: allIds.length }));
-      } else {
-        setForm((f) => ({ ...f, quantity: 1 }));
-      }
+      setSelectedMemberIds([]);
+      setForm((f) => ({ ...f, quantity: 0 }));
     }
   };
 
@@ -375,11 +389,6 @@ export default function CreatePurchase() {
       const rawShipping = parseFloat(form.shipping_fee) || 0;
       const rawDiscount = parseFloat(form.discount) || 0;
 
-      const uniqueUsers = new Set(allTeamMembers.map((m) => m.user_id).filter(Boolean));
-      const nullUsers = allTeamMembers.filter((m) => !m.user_id).length;
-      const calcFactor = uniqueUsers.size + nullUsers;
-      const DIVISION_FACTOR = calcFactor > 0 ? calcFactor : 1;
-
       const selectedStore = stores.find((s) => s.public_store_id === form.store_id);
       const storeInternalId = selectedStore?.internal_store_id || null;
       const teamInternalId = teams.find((t) => t.public_team_id === form.team_id)?.internal_team_id || null;
@@ -388,57 +397,29 @@ export default function CreatePurchase() {
       let rows = [];
 
       if (form.team_id && isBulkRegister) {
-        // 일괄 등록 (팀원 전체)
-        const membersToRegister = albumMembers.filter((am) =>
-          allTeamMembers.some((tm) => tm.member_name === am.member_name)
+        // 일괄 등록 (팀원 전체) - DB RPC 수행
+        const { error: bulkError } = await supabase.rpc(
+          "register_bulk_purchase",
+          {
+            p_team_id: teamInternalId,
+            p_store_id: storeInternalId,
+            p_album_id: albumInternalId,
+            p_quantity: 1, // 각 아이템별 기본 수량
+          }
         );
 
-        const nCount = membersToRegister.length;
-        if (nCount === 0) throw new Error("등록할 멤버가 없습니다.");
-
-        const finalShip = Math.round(rawShipping / DIVISION_FACTOR / nCount);
-        const finalDisc = Math.round(rawDiscount / DIVISION_FACTOR / nCount);
-
-        rows = membersToRegister.map((member) => {
-          const tm = allTeamMembers.find((t) => t.member_name === member.member_name);
-          return {
-            user_id: tm.user_id, // 각 멤버 담당자의 user_id
-            team_id: teamInternalId,
-            store_id: storeInternalId,
-            album_id: albumInternalId,
-            store_name: form.store_name,
-            album_name: form.album_name,
-            event_name: form.event_name,
-            event_end_at: form.event_end_at || null,
-            price: parseFloat(form.price) || 0,
-            quantity: 1,
-            member_name: member.member_name,
-            event_image_url: member.event_image_url || null,
-            shipping_fee: finalShip,
-            shipping_discount: finalDisc,
-            is_settled: false,
-            received: false,
-          };
-        });
+        if (bulkError) throw bulkError;
       } else {
         // 기존 로직: 선택한 멤버만 등록
         const filteredMembers = albumMembers.filter((m) =>
-          selectedMemberIds.includes(m.id),
+          selectedMemberIds.includes(m.id)
         );
 
         const nCount = filteredMembers.length;
         if (nCount === 0) throw new Error("등록할 멤버를 선택해주세요.");
 
-        let finalShip = 0;
-        let finalDisc = 0;
-
-        if (form.team_id && form.team_id !== "") {
-          finalShip = Math.round(rawShipping / DIVISION_FACTOR / nCount);
-          finalDisc = Math.round(rawDiscount / DIVISION_FACTOR / nCount);
-        } else {
-          finalShip = Math.round(rawShipping / nCount);
-          finalDisc = Math.round(rawDiscount / nCount);
-        }
+        const finalShip = Math.round(rawShipping / teamDivisor / nCount);
+        const finalDisc = Math.round(rawDiscount / teamDivisor / nCount);
 
         rows = filteredMembers.map((member) => ({
           user_id: user.id, // 본인
@@ -453,15 +434,17 @@ export default function CreatePurchase() {
           quantity: 1, // 각 아이템은 항상 수량 1
           member_name: member.member_name,
           event_image_url: member.event_image_url || null,
-          shipping_fee: finalShip, // 계산된 값 할당
-          shipping_discount: finalDisc, // 계산된 값 할당
+          shipping_fee: finalShip,
+          shipping_discount: finalDisc,
           is_settled: false,
           received: false,
         }));
       }
 
-      const { error } = await supabase.from("purchases").insert(rows);
-      if (error) throw error;
+      if (rows.length > 0) {
+        const { error } = await supabase.from("purchases").insert(rows);
+        if (error) throw error;
+      }
 
       navigate("/");
     } catch (error) {
@@ -476,13 +459,10 @@ export default function CreatePurchase() {
   const allSelected =
     albumMembers.length > 0 && selectedMemberIds.length === albumMembers.length;
 
-  const isCurrentUserLeader = useMemo(() => {
-    if (!form.team_id || allTeamMembers.length === 0) return false;
-    return allTeamMembers.some((m) => m.user_id === user?.id && m.is_leader);
-  }, [form.team_id, allTeamMembers, user?.id]);
-
   const selectClass = "cp-select";
   const inputClass = "cp-input-full";
+
+
 
   return (
     <div className="cp-wrapper">
@@ -744,10 +724,7 @@ export default function CreatePurchase() {
           {!isPersonal &&
             form.team_id &&
             (() => {
-              const uniqueUsers = new Set(allTeamMembers.map((m) => m.user_id).filter(Boolean));
-              const nullUsers = allTeamMembers.filter((m) => !m.user_id).length;
-              const calcFactor = uniqueUsers.size + nullUsers;
-              const divFactor = calcFactor > 0 ? calcFactor : 1;
+              const divFactor = teamDivisor > 0 ? teamDivisor : 1;
 
               return (
                 <div className="bg-brand-50 p-3 rounded-xl border border-brand-100">
