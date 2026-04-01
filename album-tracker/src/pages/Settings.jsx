@@ -28,15 +28,28 @@ export default function Settings() {
     try {
       const { data, error } = await supabase
         .from("safe_team_members")
-        .select("public_team_id, team_name"); // 컬럼명 확인 (team_name)
+        .select("team_id, member_name");
 
       if (error) throw error;
 
-      // 뷰에서 이미 필터링되어 오므로 바로 state에 담기
+      // team_id로 팀 이름 조회
+      const teamIds = [...new Set((data || []).map((t) => t.team_id))];
+      if (teamIds.length === 0) {
+        setMyTeams([]);
+        return;
+      }
+
+      const { data: teamsData, error: teamsError } = await supabase
+        .from("safe_teams")
+        .select("id, name")
+        .in("id", teamIds);
+
+      if (teamsError) throw teamsError;
+
       setMyTeams(
-        data.map((t) => ({
-          public_team_id: t.public_team_id,
-          name: t.team_name,
+        (teamsData || []).map((t) => ({
+          id: t.id,
+          name: t.name,
         })),
       );
     } catch (err) {
@@ -137,7 +150,7 @@ export default function Settings() {
             {myTeams.length > 0 ? (
               <ul className="st-teams-list">
                 {myTeams.map((t) => (
-                  <li key={t.public_team_id} className="st-team-item">
+                  <li key={t.id} className="st-team-item">
                     <div className="st-team-icon">
                       <svg
                         fill="currentColor"

@@ -2,23 +2,27 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import PurchaseList from "../components/PurchaseList";
+import { useAuth } from "../hooks/useAuth";
 import "./AllPurchases.css";
 
 export default function AllPurchases() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [list, setList] = useState([]);
 
   const fetchData = async () => {
+    if (!user?.id) return;
     const { data } = await supabase
       .from("safe_purchases")
       .select("*")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
     setList(data || []);
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user?.id]);
 
   return (
     <div className="ap-wrapper">
