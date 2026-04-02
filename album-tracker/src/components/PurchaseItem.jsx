@@ -60,7 +60,7 @@ export default function PurchaseItem({ item, refresh }) {
   const dday = getDday(item.event_end_at);
 
   const toggleSettled = async () => {
-    const idToUpdate = item.internal_purchase_id;
+    const idToUpdate = item.id;
     if (!idToUpdate) return;
     setLoading(true);
     try {
@@ -77,7 +77,7 @@ export default function PurchaseItem({ item, refresh }) {
   };
 
   const toggleReceived = async () => {
-    const idToUpdate = item.internal_purchase_id;
+    const idToUpdate = item.id;
     if (!idToUpdate) return;
     setLoading(true);
     try {
@@ -98,16 +98,26 @@ export default function PurchaseItem({ item, refresh }) {
       setConfirmDelete(true);
       return;
     }
-    const idToUpdate = item.internal_purchase_id;
-    if (!idToUpdate) return;
+    const idToUpdate = item.id;
+    if (!idToUpdate) {
+      alert("식별자가 없어 삭제할 수 없습니다.");
+      return;
+    }
     setLoading(true);
     try {
-      await supabase.from("purchases").delete().eq("id", idToUpdate);
+      const { error } = await supabase
+        .from("purchases")
+        .delete()
+        .eq("id", idToUpdate);
+      if (error) throw error;
+      setIsMenuOpen(false);
       refresh();
     } catch (e) {
-      console.error(e);
+      console.error("삭제 오류:", e);
+      alert("삭제에 실패했습니다: " + (e.message || JSON.stringify(e)));
     } finally {
       setLoading(false);
+      setConfirmDelete(false);
     }
   };
 
