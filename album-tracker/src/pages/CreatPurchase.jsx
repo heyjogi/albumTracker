@@ -115,47 +115,60 @@ export default function CreatePurchase() {
   }, [form.store_id, form.price, form.team_id, stores, teamTotalMembers, albumMembers, teamDivisor, selectedMemberIds]);
 
   const fetchOptions = async () => {
+    // 1. 내가 속한 team_id 목록 먼저 조회
+    const { data: myMemberships } = await supabase
+      .from("safe_team_members")
+      .select("team_id");
+
+    const myTeamIds = [...new Set((myMemberships || []).map((m) => m.team_id))];
 
     const [{ data: ss }, { data: ts }] = await Promise.all([
       supabase.from("safe_stores").select("*"),
-      supabase.from("safe_teams").select("*"),
+      myTeamIds.length > 0
+        ? supabase.from("safe_teams").select("*").in("id", myTeamIds).order("name", { ascending: true })
+        : Promise.resolve({ data: [] }),
     ]);
     setStores(ss || []);
     setTeams(ts || []);
 
     if (ts && ts.length > 0) {
       const firstTeam = ts[0];
+      const firstTeamId = firstTeam.id;
+
       setForm((f) => ({
         ...f,
-        team_id: firstTeam.id,
+        team_id: firstTeamId,
         team_name: firstTeam.name,
       }));
 
+      // 팀 멤버 가져오기 (user_id 포함)
       const { data: members } = await supabase
         .from("safe_team_members")
-        .select("member_id, member_name")
-        .eq("team_id", firstTeam.id);
+        .select("member_id, member_name, user_id")
+        .eq("team_id", firstTeamId);
 
       const loaded = sortMembers(members || []);
       setTeamMembers(loaded);
 
+      // 팀 구매 정보(리더 여부 등) 가져오기
       const { data: teamInfo } = await supabase.rpc("get_team_purchase_info", {
-        p_team_id: firstTeam.id,
+        p_team_id: firstTeamId,
       });
       setIsCurrentUserLeader(!!teamInfo?.is_leader);
       setTeamDivisor(teamInfo?.divisor || 1);
       setTeamTotalMembers(teamInfo?.total_members || 0);
 
-      const totalQty = loaded.reduce((sum, m) => sum + (m.quantity || 1), 0);
-      setForm((f) => ({ ...f, quantity: totalQty }));
+      // 내가 담당한 멤버 수로 수량 초기화
+      const myAssigned = loaded.filter((m) => m.user_id === user?.id);
+      setForm((f) => ({ ...f, quantity: myAssigned.length || 1 }));
     }
   };
 
   const handleStoreChange = async (e) => {
-    const storeId = e.target.value;
+    const storeId = e.target.value; // 여기서 storeId가 정의됩니다.
     const store = stores.find((s) => s.id === storeId);
 
-    // 1. 폼 데이터 초기화 및 배송비/할인액 설정
+    // 1. 폼 데이터 및 상태 초기화
     setForm((f) => ({
       ...f,
       store_id: storeId,
@@ -169,25 +182,36 @@ export default function CreatePurchase() {
       shipping_fee: Number(store?.shipping_fee) || 0,
     }));
 
-    // 2. 관련 상태 초기화
     setAlbums([]);
     setAlbumMembers([]);
     setSelectedMemberIds([]);
 
-    // 3. 앨범 목록 로드
+    // 2. 해당 상점의 앨범 목록 로드 (마감기한 필터링 적용)
     if (storeId) {
       const { data: albumsData } = await supabase
         .from("safe_store_albums")
-        .select(
-          "id, store_id, album_name, event_name, price, event_end_at",
-        )
+        .select("id, store_id, album_name, event_name, price, event_end_at")
         .eq("store_id", storeId);
 
-      setAlbums(albumsData || []);
+      // --- 수정한 필터링 로직 ---
+      const nowTime = new Date().getTime(); // 현재 시간을 밀리초 숫자로 변환
 
-      // 앨범이 딱 1개라면 자동 선택
-      if (albumsData && albumsData.length === 1) {
-        const album = albumsData[0];
+      const activeAlbums = (albumsData || []).filter((album) => {
+        // 1. 마감 기한이 없으면(null) 표시
+        if (!album.event_end_at) return true;
+
+        // 2. DB 날짜 문자열을 Date 객체로 바꾼 뒤 밀리초 숫자로 변환
+        const expireTime = new Date(album.event_end_at).getTime();
+
+        // 3. 숫자로 크기 비교 (현재보다 미래일 때만 true)
+        return expireTime > nowTime;
+      });
+
+      setAlbums(activeAlbums);
+
+      // 3. 필터링된 앨범이 딱 1개라면 자동 선택
+      if (activeAlbums.length === 1) {
+        const album = activeAlbums[0];
 
         setForm((f) => ({
           ...f,
@@ -198,7 +222,7 @@ export default function CreatePurchase() {
           price: Number(album.price) || 0,
         }));
 
-        // 해당 앨범의 멤버 로드
+        // 해당 앨범의 멤버 로드 로직 (기존 코드와 동일)
         const { data: members } = await supabase
           .from("album_members")
           .select("id, member_id, member_name, event_image_url")
@@ -209,25 +233,19 @@ export default function CreatePurchase() {
 
         // 3. 분철팀(team_id) 유무에 따른 필터링 적용
         const currentTeamId = form.team_id;
-        if (currentTeamId) {
-          const { data: teamData } = await supabase
-            .from("safe_team_members")
-            .select("member_id, member_name")
-            .eq("team_id", currentTeamId);
-
-          const sortedTeam = sortMembers(teamData || []);
-
-          const teamMemberNames = sortedTeam.map((m) => m.member_name);
+        if (currentTeamId && user) {
+          // 현재 teamMembers 상태에 user_id가 포함되어 있으므로 그대로 사용
+          const myAssigned = teamMembers.filter((m) => m.user_id === user.id);
+          const myMemberNames = myAssigned.map((m) => m.member_name);
 
           const selectedIds = loaded
-            .filter((m) => teamMemberNames.includes(m.member_name))
+            .filter((m) => myMemberNames.includes(m.member_name))
             .map((m) => m.id);
 
           setSelectedMemberIds(selectedIds);
-          setForm((f) => ({ ...f, quantity: selectedIds.length }));
+          setForm((f) => ({ ...f, quantity: selectedIds.length || 1 }));
         } else {
           // 개인 구매일 경우
-          // const allIds = loaded.map((m) => m.id);
           setSelectedMemberIds([]);
           setForm((f) => ({ ...f, quantity: 0 }));
         }
@@ -284,16 +302,18 @@ export default function CreatePurchase() {
     const loaded = sortMembers(members || []);
     setAlbumMembers(loaded);
 
-    const currentTeamId = form.team_id;
-    if (currentTeamId) {
-      // 팀 구매: 팀 멤버와 매칭되는 앨범 멤버만 선택
-      const teamMemberNames = teamMembers.map((m) => m.member_name);
+    if (form.team_id && user) {
+      // 내가 담당한 팀 멤버 (teamMembers에 user_id 포함되어 있음)
+      const myAssignedMembers = teamMembers.filter((m) => m.user_id === user.id);
+      const myMemberNames = myAssignedMembers.map((m) => m.member_name);
+
+      // 앨범 멤버 중 내 담당 멤버 이름과 일치하는 ID만 추출
       const selectedIds = loaded
-        .filter((m) => teamMemberNames.includes(m.member_name))
+        .filter((m) => myMemberNames.includes(m.member_name))
         .map((m) => m.id);
 
       setSelectedMemberIds(selectedIds);
-      setForm((f) => ({ ...f, quantity: selectedIds.length }));
+      setForm((f) => ({ ...f, quantity: selectedIds.length || 1 }));
     } else {
       // 개인 구매: 선택 안함 (유저가 직접 지정)
       setSelectedMemberIds([]);
@@ -316,14 +336,14 @@ export default function CreatePurchase() {
     setTeamTotalMembers(0);
 
     if (teamId && team) {
-      const { data, error } = await supabase
+      const { data: memberData, error } = await supabase
         .from("safe_team_members")
-        .select("member_id, member_name")
+        .select("member_id, member_name, user_id")
         .eq("team_id", teamId);
 
       if (error) console.error("safe_team_members fetch error:", error);
 
-      const loaded = sortMembers(data || []);
+      const loaded = sortMembers(memberData || []);
       setTeamMembers(loaded);
 
       const { data: teamInfo } = await supabase.rpc("get_team_purchase_info", {
@@ -333,18 +353,21 @@ export default function CreatePurchase() {
       setTeamDivisor(teamInfo?.divisor || 1);
       setTeamTotalMembers(teamInfo?.total_members || 0);
 
-      if (albumMembers.length > 0) {
-        const teamMemberNames = loaded.map((m) => m.member_name);
+      // 앨범이 선택된 상태라면 → 내 담당 멤버 기준으로 selectedMemberIds 재계산
+      if (albumMembers.length > 0 && user) {
+        const myAssigned = loaded.filter((m) => m.user_id === user.id);
+        const myMemberNames = myAssigned.map((m) => m.member_name);
 
         const selectedIds = albumMembers
-          .filter((m) => teamMemberNames.includes(m.member_name))
+          .filter((m) => myMemberNames.includes(m.member_name))
           .map((m) => m.id);
 
         setSelectedMemberIds(selectedIds);
-        setForm((f) => ({ ...f, quantity: selectedIds.length }));
+        setForm((f) => ({ ...f, quantity: selectedIds.length || 1 }));
       } else {
-        const totalQty = loaded.reduce((sum, m) => sum + (m.quantity || 1), 0);
-        setForm((f) => ({ ...f, quantity: totalQty }));
+        // 앨범 미선택 시 내 담당 멤버 수로 수량 초기화
+        const myAssigned = loaded.filter((m) => m.user_id === user?.id);
+        setForm((f) => ({ ...f, quantity: myAssigned.length || 1 }));
       }
     } else {
       setSelectedMemberIds([]);
@@ -400,7 +423,14 @@ export default function CreatePurchase() {
             p_team_id: teamId,
             p_store_id: storeId,
             p_album_id: albumId,
+            p_price: parseFloat(form.price) || 0,
             p_quantity: 1,
+            p_store_name: form.store_name || "",
+            p_album_name: form.album_name || "",
+            p_event_name: form.event_name || "",
+            p_event_end_at: form.event_end_at || null,
+            p_shipping_fee: rawShipping,
+            p_discount: rawDiscount,
           }
         );
 
