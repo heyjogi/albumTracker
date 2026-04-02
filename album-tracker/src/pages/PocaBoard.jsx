@@ -143,7 +143,7 @@ function PocaBoardView(props) {
     <div className="poca-wrapper">
       <header className="poca-header">
         <button onClick={() => navigate('/')}>←</button>
-        <h1>포카드볼판</h1>
+        <h1>Caligo pt.2</h1>
         <button onClick={handleReset}>초기화</button>
       </header>
 
