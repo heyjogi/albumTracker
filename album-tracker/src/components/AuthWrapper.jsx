@@ -2,9 +2,17 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import './AuthWrapper.css'
 
+// 비회원도 접근 가능한 경로
+const PUBLIC_PATHS = ['/login', '/pocaboard']
+
 export default function AuthWrapper({ children }) {
     const { user, profile, isAllowed, loading } = useAuth()
     const location = useLocation()
+
+    // 공개 경로는 인증 체크 없이 통과
+    if (PUBLIC_PATHS.includes(location.pathname)) {
+        return children
+    }
 
     if (loading) {
         return (
@@ -22,14 +30,11 @@ export default function AuthWrapper({ children }) {
         return children
     }
 
-    // 2. 권한 없는 사용자 처리 (중요!)
-    // 이미 로그인(user)은 했지만, 허용된 이메일이 아닐 때
+    // 2. 권한 없는 사용자 처리
     if (isAllowed === false) {
-        // 현재 경로가 /login이면 그대로 둡니다 (그래야 로그인 컴포넌트 내부의 에러 메시지가 보임)
         if (location.pathname === '/login') {
             return children
         }
-        // 그 외의 페이지에서 접근하면 /login으로 보냅니다.
         return <Navigate to="/login" replace />
     }
 
