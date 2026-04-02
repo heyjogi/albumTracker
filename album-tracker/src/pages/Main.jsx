@@ -29,7 +29,7 @@ export default function Main() {
         <div className="main-wrapper">
             <header className="main-header">
                 <div className="flex items-center gap-3">
-                    <img src="/logo.svg" alt="Logo" className="w-8 h-8 rounded" />
+                    <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded" />
                     <h1 className="main-logo">AlbumTracker.</h1>
                 </div>
             </header>
