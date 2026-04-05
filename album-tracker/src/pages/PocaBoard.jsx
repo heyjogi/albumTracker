@@ -151,15 +151,15 @@ function PocaBoardView(props) {
             className="poca-export-btn"
             title="전체 탭 이미지 저장"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
             </svg>
 
           </button>
           <span className="poca-header__divider">|</span>
           <button onClick={handleReset} className="poca-reset-btn">초기화</button>
         </div>
-      </header>
+      </header >
 
       <div className="poca-tabs">
         {albumVersions.map(ver => (
@@ -192,15 +192,17 @@ function PocaBoardView(props) {
         ))}
       </div>
 
-      {modal && (
-        <CountModal
-          card={modal.card}
-          count={modal.count}
-          onClose={() => setModal(null)}
-          onSave={handleModalSave}
-        />
-      )}
-    </div>
+      {
+        modal && (
+          <CountModal
+            card={modal.card}
+            count={modal.count}
+            onClose={() => setModal(null)}
+            onSave={handleModalSave}
+          />
+        )
+      }
+    </div >
   )
 }
 
@@ -248,9 +250,9 @@ export default function PocaBoard() {
             event_image_url,
             sort_order,
             album_id,
-            store_albums (
+            safe_store_albums (
               created_at,
-              stores (
+              safe_stores (
                 name
               )
             )
@@ -264,12 +266,12 @@ export default function PocaBoard() {
           ; (migongpoRaw || [])
             .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
             .forEach(item => {
-              const groupName = item.store_albums?.stores?.name || '미지정'
+              const groupName = item.safe_store_albums?.safe_stores?.name || '미지정'
 
               // 상점당 1개의 앨범(album_id)만 대표로 보여주도록 필터링
               if (!storeToAlbumMap[groupName]) {
                 storeToAlbumMap[groupName] = item.album_id
-                storeToCreatedAtMap[groupName] = item.store_albums?.created_at || ''
+                storeToCreatedAtMap[groupName] = item.safe_store_albums?.created_at || ''
               }
               if (storeToAlbumMap[groupName] !== item.album_id) {
                 return // 이미 이 상점의 다른 앨범을 처리했다면 스킵

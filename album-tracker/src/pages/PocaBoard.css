@@ -20,7 +20,7 @@
 }
 
 .poca-header__actions {
-  @apply justify-self-end flex items-center gap-2;
+  @apply justify-self-end flex items-center gap-1;
 }
 
 .poca-header__actions button {
