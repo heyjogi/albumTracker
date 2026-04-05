@@ -12,11 +12,13 @@ export default function AllPurchases() {
 
   const fetchData = async () => {
     if (!user?.id) return;
-    const { data } = await supabase
-      .from("safe_purchases")
+
+    const { data, error } = await supabase
+      .from("purchases")
       .select("*")
-      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
+
+    if (error) console.error(error);
     setList(data || []);
   };
 

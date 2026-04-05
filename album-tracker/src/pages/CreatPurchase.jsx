@@ -122,13 +122,40 @@ export default function CreatePurchase() {
 
     const myTeamIds = [...new Set((myMemberships || []).map((m) => m.team_id))];
 
-    const [{ data: ss }, { data: ts }] = await Promise.all([
+    const [{ data: ss }, { data: ts }, { data: allAlbums }] = await Promise.all([
       supabase.from("safe_stores").select("*"),
       myTeamIds.length > 0
         ? supabase.from("safe_teams").select("*").in("id", myTeamIds).order("name", { ascending: true })
         : Promise.resolve({ data: [] }),
+      supabase.from("safe_store_albums").select("store_id, event_end_at"),
     ]);
-    setStores(ss || []);
+
+    const nowTime = new Date().getTime();
+    const storeHasActiveAlbum = new Set();
+    const storeHasAnyAlbum = new Set();
+
+    (allAlbums || []).forEach(album => {
+      storeHasAnyAlbum.add(album.store_id);
+
+      if (!album.event_end_at) {
+        storeHasActiveAlbum.add(album.store_id);
+      } else {
+        const expireTime = new Date(album.event_end_at).getTime();
+        if (expireTime > nowTime) {
+          storeHasActiveAlbum.add(album.store_id);
+        }
+      }
+    });
+
+    const activeStores = (ss || []).filter(store => {
+      // 앨범이 하나라도 있는데 모두 만료된 경우만 숨김
+      if (storeHasAnyAlbum.has(store.id) && !storeHasActiveAlbum.has(store.id)) {
+        return false;
+      }
+      return true;
+    });
+
+    setStores(activeStores || []);
     setTeams(ts || []);
 
     if (ts && ts.length > 0) {

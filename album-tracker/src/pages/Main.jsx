@@ -13,11 +13,12 @@ export default function Main() {
 
     const fetchData = async () => {
         if (!user?.id) return
+
         const { data } = await supabase
-            .from('safe_purchases')
+            .from('purchases')
             .select('*')
-            .eq('user_id', user.id)
             .order('created_at', { ascending: false })
+
         setList(data || [])
     }
 
