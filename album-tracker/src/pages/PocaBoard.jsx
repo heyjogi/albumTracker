@@ -237,10 +237,76 @@ export default function PocaBoard() {
 
         if (error) throw error
 
-        const transformed = transformData(data || [])
-        setAlbumVersions(transformed)
-        if (transformed.length > 0) setActiveTab(transformed[0].id)
-      } catch {
+        let transformed = transformData(data || [])
+
+        // 미공포 데이터 가져오기
+        const { data: migongpoRaw, error: mError } = await supabase
+          .from('album_members')
+          .select(`
+            id,
+            member_name,
+            event_image_url,
+            sort_order,
+            album_id,
+            store_albums (
+              stores (
+                name
+              )
+            )
+          `)
+
+        if (mError) throw mError
+
+        const storeToAlbumMap = {}
+        const groupedMigongpo = {}
+          ; (migongpoRaw || [])
+            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+            .forEach(item => {
+              const groupName = item.store_albums?.stores?.name || '미지정'
+
+              // 상점당 1개의 앨범(album_id)만 대표로 보여주도록 필터링
+              if (!storeToAlbumMap[groupName]) {
+                storeToAlbumMap[groupName] = item.album_id
+              }
+              if (storeToAlbumMap[groupName] !== item.album_id) {
+                return // 이미 이 상점의 다른 앨범을 처리했다면 스킵
+              }
+
+              if (!groupedMigongpo[groupName]) {
+                groupedMigongpo[groupName] = []
+              }
+              groupedMigongpo[groupName].push({
+                id: item.id,
+                name: item.member_name,
+                image: item.event_image_url,
+              })
+            })
+
+        const migongpoTab = {
+          id: 'migongpo',
+          name: '미공포',
+          groups: Object.entries(groupedMigongpo).map(([name, cards]) => ({
+            name,
+            cards
+          }))
+        }
+
+        const TAB_ORDER = ['PHOTOBOOK', 'INVENTORY', 'ID PASS', 'POCAALBUM', '미공포']
+
+        const finalTabs = [...transformed, migongpoTab].sort((a, b) => {
+          let indexA = TAB_ORDER.indexOf(a.name)
+          let indexB = TAB_ORDER.indexOf(b.name)
+
+          if (indexA === -1) indexA = 999
+          if (indexB === -1) indexB = 999
+
+          return indexA - indexB
+        })
+
+        setAlbumVersions(finalTabs)
+        if (finalTabs.length > 0) setActiveTab(finalTabs[0].id)
+      } catch (err) {
+        console.error(err)
         setError('데이터 불러오기 실패')
       } finally {
         setLoading(false)
