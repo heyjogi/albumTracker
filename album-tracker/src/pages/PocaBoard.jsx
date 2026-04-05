@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { exportPocaBoardImage } from '../utils/exportPocaBoard'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
@@ -125,9 +126,8 @@ function PocaBoardView(props) {
   const {
     navigate,
     handleReset,
-    ownedCards,
-    totalCards,
-    dupCards,
+    handleExport,
+    exporting,
     albumVersions,
     activeTab,
     setActiveTab,
@@ -144,7 +144,21 @@ function PocaBoardView(props) {
       <header className="poca-header">
         <button onClick={() => navigate('/')}>←</button>
         <h1>Caligo pt.2</h1>
-        <button onClick={handleReset}>초기화</button>
+        <div className="poca-header__actions">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="poca-export-btn"
+            title="전체 탭 이미지 저장"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
+            </svg>
+
+          </button>
+          <span className="poca-header__divider">|</span>
+          <button onClick={handleReset} className="poca-reset-btn">초기화</button>
+        </div>
       </header>
 
       <div className="poca-tabs">
@@ -201,6 +215,7 @@ export default function PocaBoard() {
   const [cardCounts, setCardCounts] = useState(() => loadFromStorage())
   const [modal, setModal] = useState(null)
   const [activeTab, setActiveTab] = useState(null)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -274,6 +289,19 @@ export default function PocaBoard() {
     localStorage.removeItem(STORAGE_KEY)
   }
 
+  const handleExport = async () => {
+    if (exporting || !albumVersions.length) return
+    setExporting(true)
+    try {
+      await exportPocaBoardImage(albumVersions, cardCounts, 'pocaboard')
+    } catch (e) {
+      console.error('이미지 저장 실패:', e)
+      alert('이미지 저장에 실패했습니다.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const activeVersion = albumVersions.find(v => v.id === activeTab)
 
   const activeCards = activeVersion?.cards || []
@@ -288,9 +316,8 @@ export default function PocaBoard() {
     <PocaBoardView
       navigate={navigate}
       handleReset={handleReset}
-      ownedCards={ownedCards}
-      totalCards={totalCards}
-      dupCards={dupCards}
+      handleExport={handleExport}
+      exporting={exporting}
       albumVersions={albumVersions}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
