@@ -1,4 +1,5 @@
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+const isMobile = isIOS || /Android/i.test(navigator.userAgent)
 const SCALE = isMobile ? 1.0 : 1.5
 
 export async function exportPocaBoardImage(albumVersions, cardCounts, filename = 'pocaboard', exportTabIds = ['all'], excludeCompleted = false) {
@@ -271,7 +272,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
 
         try {
           const file = new File([blob], `${filename}.png`, { type: 'image/png' })
-          if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          if (isIOS && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
             navigator.share({
               files: [file],
               title: 'PocaBoard',
