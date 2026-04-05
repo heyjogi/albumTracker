@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { exportPocaBoardImage } from '../utils/exportPocaBoard'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
@@ -125,9 +126,8 @@ function PocaBoardView(props) {
   const {
     navigate,
     handleReset,
-    ownedCards,
-    totalCards,
-    dupCards,
+    handleExport,
+    exporting,
     albumVersions,
     activeTab,
     setActiveTab,
@@ -144,7 +144,21 @@ function PocaBoardView(props) {
       <header className="poca-header">
         <button onClick={() => navigate('/')}>←</button>
         <h1>Caligo pt.2</h1>
-        <button onClick={handleReset}>초기화</button>
+        <div className="poca-header__actions">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="poca-export-btn"
+            title="전체 탭 이미지 저장"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
+            </svg>
+
+          </button>
+          <span className="poca-header__divider">|</span>
+          <button onClick={handleReset} className="poca-reset-btn">초기화</button>
+        </div>
       </header>
 
       <div className="poca-tabs">
@@ -201,6 +215,7 @@ export default function PocaBoard() {
   const [cardCounts, setCardCounts] = useState(() => loadFromStorage())
   const [modal, setModal] = useState(null)
   const [activeTab, setActiveTab] = useState(null)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -222,10 +237,76 @@ export default function PocaBoard() {
 
         if (error) throw error
 
-        const transformed = transformData(data || [])
-        setAlbumVersions(transformed)
-        if (transformed.length > 0) setActiveTab(transformed[0].id)
-      } catch {
+        let transformed = transformData(data || [])
+
+        // 미공포 데이터 가져오기
+        const { data: migongpoRaw, error: mError } = await supabase
+          .from('album_members')
+          .select(`
+            id,
+            member_name,
+            event_image_url,
+            sort_order,
+            album_id,
+            store_albums (
+              stores (
+                name
+              )
+            )
+          `)
+
+        if (mError) throw mError
+
+        const storeToAlbumMap = {}
+        const groupedMigongpo = {}
+          ; (migongpoRaw || [])
+            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+            .forEach(item => {
+              const groupName = item.store_albums?.stores?.name || '미지정'
+
+              // 상점당 1개의 앨범(album_id)만 대표로 보여주도록 필터링
+              if (!storeToAlbumMap[groupName]) {
+                storeToAlbumMap[groupName] = item.album_id
+              }
+              if (storeToAlbumMap[groupName] !== item.album_id) {
+                return // 이미 이 상점의 다른 앨범을 처리했다면 스킵
+              }
+
+              if (!groupedMigongpo[groupName]) {
+                groupedMigongpo[groupName] = []
+              }
+              groupedMigongpo[groupName].push({
+                id: item.id,
+                name: item.member_name,
+                image: item.event_image_url,
+              })
+            })
+
+        const migongpoTab = {
+          id: 'migongpo',
+          name: '미공포',
+          groups: Object.entries(groupedMigongpo).map(([name, cards]) => ({
+            name,
+            cards
+          }))
+        }
+
+        const TAB_ORDER = ['PHOTOBOOK', 'INVENTORY', 'ID PASS', 'POCAALBUM', '미공포']
+
+        const finalTabs = [...transformed, migongpoTab].sort((a, b) => {
+          let indexA = TAB_ORDER.indexOf(a.name)
+          let indexB = TAB_ORDER.indexOf(b.name)
+
+          if (indexA === -1) indexA = 999
+          if (indexB === -1) indexB = 999
+
+          return indexA - indexB
+        })
+
+        setAlbumVersions(finalTabs)
+        if (finalTabs.length > 0) setActiveTab(finalTabs[0].id)
+      } catch (err) {
+        console.error(err)
         setError('데이터 불러오기 실패')
       } finally {
         setLoading(false)
@@ -274,6 +355,19 @@ export default function PocaBoard() {
     localStorage.removeItem(STORAGE_KEY)
   }
 
+  const handleExport = async () => {
+    if (exporting || !albumVersions.length) return
+    setExporting(true)
+    try {
+      await exportPocaBoardImage(albumVersions, cardCounts, 'pocaboard')
+    } catch (e) {
+      console.error('이미지 저장 실패:', e)
+      alert('이미지 저장에 실패했습니다.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const activeVersion = albumVersions.find(v => v.id === activeTab)
 
   const activeCards = activeVersion?.cards || []
@@ -288,9 +382,8 @@ export default function PocaBoard() {
     <PocaBoardView
       navigate={navigate}
       handleReset={handleReset}
-      ownedCards={ownedCards}
-      totalCards={totalCards}
-      dupCards={dupCards}
+      handleExport={handleExport}
+      exporting={exporting}
       albumVersions={albumVersions}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
