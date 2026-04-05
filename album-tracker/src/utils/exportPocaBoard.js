@@ -1,4 +1,5 @@
-const SCALE = 1.5
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+const SCALE = isMobile ? 1.0 : 1.5
 
 export async function exportPocaBoardImage(albumVersions, cardCounts, filename = 'pocaboard', exportTabIds = ['all'], excludeCompleted = false) {
   if (!albumVersions?.length) return
@@ -49,8 +50,8 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
     if (excludeCompleted) {
       groupsToExport = groupsToExport.filter(group => {
         if (!group.cards || group.cards.length === 0) return true
-        const isCompleted = group.cards.every(card => (cardCounts[card.id] || 0) > 0)
-        return !isCompleted
+        const allExactlyOne = group.cards.every(card => (cardCounts[card.id] || 0) === 1)
+        return !allExactlyOne
       })
     }
 
@@ -219,7 +220,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
           font-family: 'Galmuri9', monospace;
           font-size: 8px;
           line-height: 18px;
-          color: #00f0ff';
+          color: #00f0ff;
           text-align: center;
           max-width: 66px;
           overflow: hidden;
@@ -267,6 +268,24 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
     await new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
         if (!blob) { reject(new Error('toBlob failed')); return }
+
+        try {
+          const file = new File([blob], `${filename}.png`, { type: 'image/png' })
+          if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({
+              files: [file],
+              title: 'PocaBoard',
+              text: '나의 포카보드!'
+            }).then(() => resolve()).catch(e => {
+              console.error('Share failed', e)
+              resolve() // Resolve anyway if user cancelled
+            })
+            return
+          }
+        } catch (e) {
+          console.error('Share api error', e)
+        }
+
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
