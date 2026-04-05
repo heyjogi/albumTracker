@@ -151,7 +151,7 @@ function PocaBoardView(props) {
             className="poca-export-btn"
             title="전체 탭 이미지 저장"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
             </svg>
 
@@ -357,7 +357,7 @@ export default function PocaBoard() {
   }
 
   const handleReset = () => {
-    const ok = window.confirm('초기화 하시겠습니까?');
+    const ok = window.confirm('잠깐 타임~ 초기화 해볼까?🌸');
     if (!ok) return;
 
     setCardCounts({})

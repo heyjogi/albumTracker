@@ -20,15 +20,15 @@
 }
 
 .poca-header__actions {
-  @apply justify-self-end flex items-center gap-1;
+  @apply justify-self-end flex items-center;
 }
 
 .poca-header__actions button {
   @apply px-2 py-1 text-brand-500 text-lg;
 }
 
-.poca-export-btn {
-  @apply px-2 py-1 rounded text-sm hover:text-red-300 transition;
+.poca-header__actions .poca-export-btn {
+  @apply px-1 sm:px-2 py-1 rounded hover:text-red-300 transition;
 }
 
 .poca-export-btn:disabled {
@@ -36,12 +36,11 @@
 }
 
 .poca-header__divider {
-  @apply text-slate-800 opacity-30 select-none;
-  font-size: 16px;
+  @apply text-slate-800 opacity-30 select-none text-sm sm:text-base md:text-lg;
 }
 
-.poca-reset-btn {
-  @apply text-red-400 hover:text-red-300 text-xs transition;
+.poca-header__actions .poca-reset-btn {
+  @apply text-red-400 hover:text-red-300 text-[10px] sm:text-xs md:text-sm transition;
 }
 
 /*  탭  */
