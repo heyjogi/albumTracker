@@ -29,13 +29,40 @@ export default function Main() {
         <div className="main-wrapper">
             <header className="main-header">
                 <div className="flex items-center gap-3">
-                    <img src="/logo.svg" alt="Logo" className="w-8 h-8 rounded" />
+                    <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded" />
                     <h1 className="main-logo">AlbumTracker.</h1>
                 </div>
-
             </header>
 
             <main className="main-content">
+                {/* 포카드볼판 배너 버튼 */}
+                <button
+                    onClick={() => navigate('/pocaboard')}
+                    className="main-poca-banner"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-6"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                        />
+                    </svg>
+                    <div className="main-poca-banner__text">
+                        <span className="main-poca-banner__title">포카 리스트</span>
+                        {/* <span className="main-poca-banner__sub">보유 포카를 체크하고 교환 목록을 추출해요</span> */}
+                    </div>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+
                 <SummaryCard list={list} />
                 <PurchaseList list={list} refresh={fetchData} limit={3} />
             </main>

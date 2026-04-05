@@ -12,16 +12,12 @@
   @apply text-2xl font-black text-brand-900 tracking-tight;
 }
 
-.main-avatar {
-  @apply w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 font-bold text-brand-600;
-}
-
 .main-content {
   @apply flex-1 px-4 py-2 mt-4 space-y-6 overflow-y-auto pb-24;
 }
 
 .main-nav {
-  @apply fixed bottom-0 left-0 w-full h-16 bg-white border-t border-slate-100 flex justify-around items-center px-4 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-50;
+  @apply fixed bottom-0 left-0 w-full h-16 bg-white border-t border-slate-100 flex justify-around items-center px-4 rounded-t-3xl shadow-[0_-4px_20px_rgba(0_0_0_0.03)] z-50;
 }
 
 .main-nav-btn {
@@ -50,4 +46,8 @@
 
 .main-nav-btn-inactive {
   @apply flex flex-col items-center gap-1 text-slate-400 hover:text-brand-500 transition-colors;
+}
+
+.main-poca-banner {
+  @apply bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between gap-2 px-4 py-3 hover:bg-brand-950 text-slate-600 font-semibold rounded-xl transition-colors duration-200;
 }

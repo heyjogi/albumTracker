@@ -1,0 +1,187 @@
+@reference "../index.css";
+
+/*  전체  */
+.poca-wrapper {
+  @apply min-h-screen bg-slate-200 text-slate-800 flex flex-col;
+}
+
+/*  헤더  */
+.poca-header {
+  @apply grid items-center px-5 py-4 bg-slate-900 border-b border-slate-800;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.poca-header button:first-child {
+  @apply justify-self-start text-slate-400 hover:text-brand-500;
+}
+
+.poca-header h1 {
+  @apply justify-self-center text-xl font-bold text-brand-500;
+}
+
+.poca-header__actions {
+  @apply justify-self-end flex items-center gap-2;
+}
+
+.poca-header__actions button {
+  @apply px-2 py-1 text-brand-500 text-lg;
+}
+
+.poca-export-btn {
+  @apply px-2 py-1 rounded text-sm hover:text-red-300 transition;
+}
+
+.poca-export-btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.poca-header__divider {
+  @apply text-slate-800 opacity-30 select-none;
+  font-size: 16px;
+}
+
+.poca-reset-btn {
+  @apply text-red-400 hover:text-red-300 text-xs transition;
+}
+
+/*  탭  */
+.poca-tabs {
+  @apply flex gap-2 px-4 py-3 overflow-x-auto;
+}
+
+.poca-tabs button {
+  @apply px-4 py-2 text-xs rounded-full border border-slate-800 bg-slate-900 text-slate-400 whitespace-nowrap transition;
+}
+
+.poca-tabs button:hover {
+  @apply text-white bg-slate-800;
+}
+
+.poca-tabs button.active {
+  @apply bg-brand-500 text-black border-brand-500;
+}
+
+/*  그룹  */
+.poca-group {
+  @apply mb-6;
+}
+
+.poca-group-title {
+  @apply text-xs font-bold text-slate-400 mb-2 border-b border-slate-800 pb-1;
+}
+
+/*  카드 영역  */
+.poca-grid-area {
+  @apply flex-1 p-4 overflow-y-auto;
+}
+
+.poca-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 100px));
+}
+
+/*  카드  */
+.poca-card {
+  @apply flex flex-col items-center gap-1 cursor-pointer;
+}
+
+.poca-card__inner {
+  @apply relative w-full rounded-lg bg-slate-900 overflow-hidden;
+  aspect-ratio: 55 / 85;
+}
+
+.poca-card:active .poca-card__inner {
+  transform: scale(0.95);
+}
+
+.poca-card__img {
+  @apply w-full h-full object-cover;
+}
+
+.poca-card__placeholder {
+  @apply w-full h-full flex items-center justify-center bg-slate-800;
+}
+
+.poca-card__initial {
+  @apply text-lg font-bold text-brand-700;
+}
+
+/* 미보유 */
+.poca-card__overlay {
+  @apply absolute inset-0 bg-black/60;
+}
+
+/* 보유 */
+.poca-card--owned .poca-card__inner {
+  box-shadow: 0 0 0 2px #00ff00;
+}
+
+/* 중복 */
+.poca-card--dup .poca-card__inner {
+  box-shadow: 0 0 0 2px #00ff00;
+}
+
+/* 중복 뱃지 */
+.poca-card__badge {
+  @apply absolute -top-1 -right-1 w-5 h-5 text-[10px] font-bold flex items-center justify-center;
+  background: #00ff00;
+  color: #000;
+
+}
+
+/* 이름 */
+.poca-card__name {
+  @apply text-[10px] text-slate-400 text-center;
+}
+
+.poca-card--owned .poca-card__name,
+.poca-card--dup .poca-card__name {
+  @apply text-slate-800;
+}
+
+/*  모달  */
+.modal-backdrop {
+  @apply fixed inset-0 bg-black/70 flex items-center justify-center;
+}
+
+.modal-box {
+  @apply bg-slate-900 border border-slate-800 rounded-xl p-5 w-72;
+}
+
+.modal-title {
+  @apply text-center font-bold text-brand-500;
+}
+
+.modal-sub {
+  @apply text-center text-xs text-slate-400 mb-4;
+}
+
+.modal-counter {
+  @apply flex justify-center gap-4 mb-3;
+}
+
+.modal-counter button {
+  @apply w-9 h-9 rounded-full bg-slate-800 text-white;
+}
+
+.modal-warn {
+  @apply text-xs text-center text-red-400 mb-2;
+}
+
+.modal-actions {
+  @apply flex gap-2 mt-4;
+}
+
+.modal-actions button {
+  @apply flex-1 py-2 rounded-md text-sm font-semibold;
+}
+
+.modal-actions button:first-child {
+  @apply bg-slate-800 text-slate-400;
+}
+
+.modal-actions button:last-child {
+  @apply bg-brand-500 text-black;
+}
