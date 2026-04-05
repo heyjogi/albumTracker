@@ -249,6 +249,7 @@ export default function PocaBoard() {
             sort_order,
             album_id,
             store_albums (
+              created_at,
               stores (
                 name
               )
@@ -258,6 +259,7 @@ export default function PocaBoard() {
         if (mError) throw mError
 
         const storeToAlbumMap = {}
+        const storeToCreatedAtMap = {}
         const groupedMigongpo = {}
           ; (migongpoRaw || [])
             .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
@@ -267,6 +269,7 @@ export default function PocaBoard() {
               // 상점당 1개의 앨범(album_id)만 대표로 보여주도록 필터링
               if (!storeToAlbumMap[groupName]) {
                 storeToAlbumMap[groupName] = item.album_id
+                storeToCreatedAtMap[groupName] = item.store_albums?.created_at || ''
               }
               if (storeToAlbumMap[groupName] !== item.album_id) {
                 return // 이미 이 상점의 다른 앨범을 처리했다면 스킵
@@ -288,7 +291,11 @@ export default function PocaBoard() {
           groups: Object.entries(groupedMigongpo).map(([name, cards]) => ({
             name,
             cards
-          }))
+          })).sort((a, b) => {
+            const timeA = new Date(storeToCreatedAtMap[a.name] || 0).getTime()
+            const timeB = new Date(storeToCreatedAtMap[b.name] || 0).getTime()
+            return timeA - timeB
+          })
         }
 
         const TAB_ORDER = ['PHOTOBOOK', 'INVENTORY', 'ID PASS', 'POCAALBUM', '미공포']
