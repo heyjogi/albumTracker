@@ -1,4 +1,4 @@
-const SCALE = 1
+const SCALE = 1.5
 
 export async function exportPocaBoardImage(albumVersions, cardCounts, filename = 'pocaboard') {
   if (!albumVersions?.length) return
