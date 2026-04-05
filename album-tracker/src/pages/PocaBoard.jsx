@@ -120,6 +120,93 @@ function CountModal({ card, count, onClose, onSave }) {
   )
 }
 
+function ExportModal({ onClose, onExport, albumVersions }) {
+  const [selectedTabs, setSelectedTabs] = useState(['all'])
+  const [excludeCompleted, setExcludeCompleted] = useState(false)
+
+  const handleToggle = (id) => {
+    if (id === 'all') {
+      if (selectedTabs.includes('all')) {
+        setSelectedTabs([])
+      } else {
+        setSelectedTabs(['all'])
+      }
+    } else {
+      let newSelected = selectedTabs.filter(t => t !== 'all')
+      if (newSelected.includes(id)) {
+        newSelected = newSelected.filter(t => t !== id)
+      } else {
+        newSelected.push(id)
+      }
+
+      if (newSelected.length === 0) {
+        setSelectedTabs([])
+      } else if (newSelected.length === albumVersions.length) {
+        setSelectedTabs(['all'])
+      } else {
+        setSelectedTabs(newSelected)
+      }
+    }
+  }
+
+  const isAll = selectedTabs.includes('all')
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <h3 className="modal-title">이미지 추출</h3>
+
+        <div className="export-options" style={{ marginTop: '16px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>추출 대상 (다중 선택 가능)</label>
+
+            <div style={{ padding: '0 4px 8px 4px' }}>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#f8fafc', fontWeight: 'bold', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={isAll}
+                  onChange={() => handleToggle('all')}
+                  style={{ width: '18px', height: '18px', accentColor: '#d93915' }}
+                />
+                전체
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#1e293b', border: '1px solid #334155', borderRadius: '4px', padding: '10px', maxHeight: '150px', overflowY: 'auto' }}>
+              {albumVersions.map(ver => (
+                <label key={ver.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#cbd5e1', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={isAll || selectedTabs.includes(ver.id)}
+                    onChange={() => handleToggle(ver.id)}
+                    style={{ width: '16px', height: '16px', accentColor: '#d93915' }}
+                  />
+                  {ver.name}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#cbd5e1', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={excludeCompleted}
+              onChange={e => setExcludeCompleted(e.target.checked)}
+              style={{ width: '16px', height: '16px', accentColor: '#d93915' }}
+            />
+            드볼 제외
+          </label>
+        </div>
+
+        <div className="modal-actions">
+          <button onClick={onClose}>취소</button>
+          <button onClick={() => onExport(selectedTabs, excludeCompleted)}>추출하기</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 // ✅ UI 전용 컴포넌트 (HTML 분리)
 function PocaBoardView(props) {
@@ -136,7 +223,9 @@ function PocaBoardView(props) {
     handleCardClick,
     modal,
     setModal,
-    handleModalSave
+    handleModalSave,
+    exportModal,
+    setExportModal
   } = props
 
   return (
@@ -146,10 +235,10 @@ function PocaBoardView(props) {
         <h1>Caligo pt.2</h1>
         <div className="poca-header__actions">
           <button
-            onClick={handleExport}
+            onClick={() => setExportModal(true)}
             disabled={exporting}
             className="poca-export-btn"
-            title="전체 탭 이미지 저장"
+            title="이미지 저장"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
@@ -202,6 +291,14 @@ function PocaBoardView(props) {
           />
         )
       }
+
+      {exportModal && (
+        <ExportModal
+          albumVersions={albumVersions}
+          onClose={() => setExportModal(false)}
+          onExport={handleExport}
+        />
+      )}
     </div >
   )
 }
@@ -216,6 +313,7 @@ export default function PocaBoard() {
   const [error, setError] = useState(null)
   const [cardCounts, setCardCounts] = useState(() => loadFromStorage())
   const [modal, setModal] = useState(null)
+  const [exportModal, setExportModal] = useState(false)
   const [activeTab, setActiveTab] = useState(null)
   const [exporting, setExporting] = useState(false)
 
@@ -357,18 +455,25 @@ export default function PocaBoard() {
   }
 
   const handleReset = () => {
-    const ok = window.confirm('잠깐 타임~ 초기화 해볼까?🌸');
+    const ok = window.confirm('잠깐 타임✋, 초기화 해볼까?🌸');
     if (!ok) return;
 
     setCardCounts({})
     localStorage.removeItem(STORAGE_KEY)
   }
 
-  const handleExport = async () => {
+  const handleExport = async (exportTabIds, excludeCompleted) => {
     if (exporting || !albumVersions.length) return
+
+    if (!exportTabIds || exportTabIds.length === 0) {
+      alert('잠깐 타임✋, 앨범 종류를 선택해볼까~🌸')
+      return
+    }
+
     setExporting(true)
+    setExportModal(false)
     try {
-      await exportPocaBoardImage(albumVersions, cardCounts, 'pocaboard')
+      await exportPocaBoardImage(albumVersions, cardCounts, 'pocaboard', exportTabIds, excludeCompleted)
     } catch (e) {
       console.error('이미지 저장 실패:', e)
       alert('이미지 저장에 실패했습니다.')
@@ -402,6 +507,8 @@ export default function PocaBoard() {
       modal={modal}
       setModal={setModal}
       handleModalSave={handleModalSave}
+      exportModal={exportModal}
+      setExportModal={setExportModal}
     />
   )
 }
