@@ -26,6 +26,26 @@ function saveToStorage(data) {
   }
 }
 
+// 보드 구조(앨범/카드 리스트) 캐시 유틸 (sessionStorage 사용)
+const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v1'
+
+function loadStructureFromCache() {
+  try {
+    const raw = sessionStorage.getItem(STRUCTURE_CACHE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function saveStructureToCache(data) {
+  try {
+    sessionStorage.setItem(STRUCTURE_CACHE_KEY, JSON.stringify(data))
+  } catch {
+    console.error('sessionStorage 저장 실패')
+  }
+}
+
 // storage image_path → 공개 URL 변환
 function getImageUrl(imagePath) {
   if (!imagePath) return null
@@ -308,13 +328,16 @@ function PocaBoardView(props) {
 export default function PocaBoard() {
   const navigate = useNavigate()
 
-  const [albumVersions, setAlbumVersions] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [albumVersions, setAlbumVersions] = useState(() => loadStructureFromCache() || [])
+  const [loading, setLoading] = useState(!loadStructureFromCache())
   const [error, setError] = useState(null)
   const [cardCounts, setCardCounts] = useState(() => loadFromStorage())
   const [modal, setModal] = useState(null)
   const [exportModal, setExportModal] = useState(false)
-  const [activeTab, setActiveTab] = useState(null)
+  const [activeTab, setActiveTab] = useState(() => {
+    const cached = loadStructureFromCache()
+    return cached && cached.length > 0 ? cached[0].id : null
+  })
   const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
@@ -366,13 +389,12 @@ export default function PocaBoard() {
             .forEach(item => {
               const groupName = item.safe_store_albums?.safe_stores?.name || '미지정'
 
-              // 상점당 1개의 앨범(album_id)만 대표로 보여주도록 필터링
               if (!storeToAlbumMap[groupName]) {
                 storeToAlbumMap[groupName] = item.album_id
                 storeToCreatedAtMap[groupName] = item.safe_store_albums?.created_at || ''
               }
               if (storeToAlbumMap[groupName] !== item.album_id) {
-                return // 이미 이 상점의 다른 앨범을 처리했다면 스킵
+                return
               }
 
               if (!groupedMigongpo[groupName]) {
@@ -403,18 +425,28 @@ export default function PocaBoard() {
         const finalTabs = [...transformed, migongpoTab].sort((a, b) => {
           let indexA = TAB_ORDER.indexOf(a.name)
           let indexB = TAB_ORDER.indexOf(b.name)
-
           if (indexA === -1) indexA = 999
           if (indexB === -1) indexB = 999
-
           return indexA - indexB
         })
 
-        setAlbumVersions(finalTabs)
-        if (finalTabs.length > 0) setActiveTab(finalTabs[0].id)
+        // 데이터가 실제로 변경되었을 때만 업데이트 (불필요한 리렌더링 및 캐시 갱신 방지)
+        const currentStructure = loadStructureFromCache()
+        if (JSON.stringify(finalTabs) !== JSON.stringify(currentStructure)) {
+          setAlbumVersions(finalTabs)
+          saveStructureToCache(finalTabs)
+
+          // 탭이 하나도 선택되지 않은 경우만 첫 번째 탭 선택
+          if (!activeTab && finalTabs.length > 0) {
+            setActiveTab(finalTabs[0].id)
+          }
+        }
       } catch (err) {
-        console.error(err)
-        setError('데이터 불러오기 실패')
+        console.error('백그라운드 데이터 갱신 실패:', err)
+        // 캐시가 없는 경우에만 에러 표시
+        if (!loadStructureFromCache()) {
+          setError('데이터 불러오기 실패')
+        }
       } finally {
         setLoading(false)
       }
