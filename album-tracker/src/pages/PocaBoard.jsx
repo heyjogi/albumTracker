@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { exportPocaBoardImage } from '../utils/exportPocaBoard'
+import { getCardLayout } from '../utils/cardLayout'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
@@ -86,13 +87,15 @@ function transformData(dbData) {
 
 
 // 카드
-function PocaCard({ card, count, onClick }) {
+function PocaCard({ card, count, onClick, layout }) {
   const hasCard = count > 0
   const isDuplicate = count > 1
 
+  const layoutClass = layout ? `poca-card--${layout}` : ''
+
   return (
     <div
-      className={`poca-card ${hasCard ? 'poca-card--owned' : ''} ${isDuplicate ? 'poca-card--dup' : ''}`}
+      className={`poca-card ${hasCard ? 'poca-card--owned' : ''} ${isDuplicate ? 'poca-card--dup' : ''} ${layoutClass}`}
       onClick={() => onClick(card.id)}
       title={`${card.name} (${count}장)`}
     >
@@ -174,11 +177,11 @@ function ExportModal({ onClose, onExport, albumVersions }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <h3 className="modal-title">이미지 추출</h3>
+        <h3 className="modal-title">이미지 저장</h3>
 
         <div className="export-options" style={{ marginTop: '16px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>추출 대상 (다중 선택 가능)</label>
+            <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>저장할 앨범을 선택하십시오.</label>
 
             <div style={{ padding: '0 4px 8px 4px' }}>
               <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#f8fafc', fontWeight: 'bold', cursor: 'pointer' }}>
@@ -220,7 +223,7 @@ function ExportModal({ onClose, onExport, albumVersions }) {
 
         <div className="modal-actions">
           <button onClick={onClose}>취소</button>
-          <button onClick={() => onExport(selectedTabs, excludeCompleted)}>추출하기</button>
+          <button onClick={() => onExport(selectedTabs, excludeCompleted)}>저장하기</button>
         </div>
       </div>
     </div>
@@ -283,22 +286,31 @@ function PocaBoardView(props) {
       </div>
 
       <div className="poca-grid-area">
-        {activeVersion?.groups.map(group => (
-          <div key={group.name} className="poca-group">
-            <h3 className="poca-group-title">{group.name}</h3>
+        {activeVersion?.groups.map(group => {
+          const isGroupHorizontal = group.cards.some(card =>
+            getCardLayout(activeVersion?.name, group.name, card.name) === 'horizontal'
+          )
+          return (
+            <div key={group.name} className="poca-group">
+              <h3 className="poca-group-title">{group.name}</h3>
 
-            <div className="poca-grid">
-              {group.cards.map(card => (
-                <PocaCard
-                  key={card.id}
-                  card={card}
-                  count={cardCounts[card.id] || 0}
-                  onClick={handleCardClick}
-                />
-              ))}
+              <div className={`poca-grid ${isGroupHorizontal ? 'poca-grid--horizontal' : ''}`}>
+                {group.cards.map(card => {
+                  const cardLayout = getCardLayout(activeVersion?.name, group.name, card.name)
+                  return (
+                    <PocaCard
+                      key={card.id}
+                      card={card}
+                      count={cardCounts[card.id] || 0}
+                      onClick={handleCardClick}
+                      layout={cardLayout}
+                    />
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {

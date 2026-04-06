@@ -71,24 +71,58 @@
 
 /*  카드 영역  */
 .poca-grid-area {
-  @apply flex-1 p-4 overflow-y-auto;
+  @apply p-4 overflow-y-auto flex-grow;
 }
 
 .poca-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 12px;
-  grid-template-columns: repeat(5, minmax(0, 100px));
+  max-width: 540px;
+  /* 5개 세로형 카드가 적절한 크기로 유지되도록 제한 */
+}
+
+.poca-grid--horizontal {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 540px;
+  /* 동일한 전체 너비를 유지하여 3열일 때 가로형 카드가 커지도록 함 */
+  gap: 16px;
 }
 
 /*  카드  */
 .poca-card {
-  @apply flex flex-col items-center gap-1 cursor-pointer;
+  @apply flex flex-col items-center gap-1 cursor-pointer w-full;
+  transition: transform 0.2s;
+}
+
+/* 3열 그리드(가로형 그룹) 내에서 세로 카드가 너무 커지지 않도록 비율(55/85)만큼 너비 제한 */
+.poca-grid--horizontal .poca-card:not(.poca-card--horizontal) {
+  width: 64.7%;
+}
+
+.poca-card:hover {
+  transform: translateY(-4px);
 }
 
 .poca-card__inner {
   @apply relative w-full rounded-lg bg-slate-900 overflow-hidden;
   aspect-ratio: 55 / 85;
+}
+
+.poca-card--horizontal .poca-card__inner {
+  aspect-ratio: 85 / 55;
+}
+
+.poca-card--square .poca-card__inner {
+  aspect-ratio: 1 / 1;
+}
+
+.poca-card--photo .poca-card__inner {
+  aspect-ratio: 3 / 4;
+}
+
+.poca-card--seal .poca-card__inner {
+  aspect-ratio: 4 / 5;
 }
 
 .poca-card:active .poca-card__inner {
