@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext({});
@@ -9,22 +9,21 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [isAllowed, setIsAllowed] = useState(null);
   const [loading, setLoading] = useState(true);
+  const checkedUserIdRef = useRef(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) checkUserStatus(session.user);
-      else setLoading(false);
-    });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) checkUserStatus(session.user);
-      else {
+      if (session?.user) {
+        // 이미 동일한 유저로 체크했으면 재조회 생략 (탭 전환 등)
+        if (checkedUserIdRef.current === session.user.id) return;
+        checkedUserIdRef.current = session.user.id;
+        checkUserStatus(session.user);
+      } else {
+        checkedUserIdRef.current = null;
         setProfile(null);
         setIsAllowed(null);
         setLoading(false);
