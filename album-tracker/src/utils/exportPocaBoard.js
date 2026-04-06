@@ -1,3 +1,5 @@
+import { getCardLayout, CARD_LAYOUTS } from './cardLayout'
+
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
 const isMobile = isIOS || /Android/i.test(navigator.userAgent)
 const SCALE = isMobile ? 1.0 : 1.5
@@ -112,10 +114,15 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
       `
         groupEl.appendChild(groupTitle)
 
+        const isGroupHorizontal = group.cards.some(card =>
+          getCardLayout(version.name, group.name, card.name) === CARD_LAYOUTS.HORIZONTAL
+        )
+        const gridCols = isGroupHorizontal ? 3 : 5
+
         const grid = document.createElement('div')
         grid.style.cssText = `
         display: grid;
-        grid-template-columns: repeat(5, 66px);
+        grid-template-columns: repeat(${gridCols}, ${isGroupHorizontal ? 105 : 66}px);
         gap: 8px;
         box-sizing: border-box;
       `
@@ -127,21 +134,34 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
           const hasBorder = count === 0 || isDup
           const borderColor = isDup ? '#00ff00' : '#00f0ff'
 
+          const layout = getCardLayout(version.name, group.name, card.name)
+          const isHorizontal = layout === CARD_LAYOUTS.HORIZONTAL
+          const isSquare = layout === CARD_LAYOUTS.SQUARE
+          const isPhoto = layout === CARD_LAYOUTS.PHOTO
+          const isSeal = layout === CARD_LAYOUTS.SEAL
+          
+          const cardWidth = isHorizontal ? 102 : 66
+          let cardHeight = 102
+          if (isHorizontal) cardHeight = 66
+          else if (isSquare) cardHeight = 66
+          else if (isPhoto) cardHeight = 88 // 3:4 비율
+          else if (isSeal) cardHeight = 83  // 4:5 비율
+
           const cardWrapper = document.createElement('div')
           cardWrapper.style.cssText = `
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: 0;
-          width: 66px;
+          width: ${cardWidth}px;
           box-sizing: border-box;
         `
 
           const borderWrapper = document.createElement('div')
           borderWrapper.style.cssText = `
           position: relative;
-          width: 66px;
-          height: 102px;
+          width: ${cardWidth}px;
+          height: ${cardHeight}px;
           padding: ${hasBorder ? '2px' : '0px'};
           background: ${hasBorder ? borderColor : 'transparent'};
           box-sizing: border-box;
@@ -206,7 +226,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
 
           const nameWrap = document.createElement('div')
           nameWrap.style.cssText = `
-          width: 66px;
+          width: ${cardWidth}px;
           height: 18px;
           display: flex;
           align-items: center;
@@ -223,7 +243,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
           line-height: 18px;
           color: #00f0ff;
           text-align: center;
-          max-width: 66px;
+          max-width: ${cardWidth}px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
