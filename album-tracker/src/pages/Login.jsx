@@ -49,9 +49,9 @@ export default function Login() {
                     </svg>
                     <div className="w-full flex flex-col items-center text-center">
                         <span>포카리스트 바로가기</span>
-                        {/* <span className="login-poca-hint">
+                        <span className="login-poca-hint">
                             로그인 없이 이용 가능합니다
-                        </span> */}
+                        </span>
                     </div>
                 </button>
                 <div className="login-divider">
@@ -65,9 +65,17 @@ export default function Login() {
                     {loading ? (
                         <span>로그인 확인 중...</span>
                     ) : (
-                        <>분철팀 전용</>
+                        <div className="w-full flex flex-col items-center text-center">
+                            <span>분철팀 전용</span>
+                            <span className="login-hint">
+                                시작하기
+                            </span>
+                        </div>
                     )}
                 </button>
+                <div className="login-privacy-link">
+                    <a href="/privacy">개인정보처리방침</a>
+                </div>
             </div>
         </div>
     );
