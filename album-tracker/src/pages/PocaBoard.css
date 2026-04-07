@@ -64,7 +64,7 @@
 
 /*  전체 화면 로딩  */
 .poca-loading-full {
-  @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900 text-slate-100 font-galmuri;
+  @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900 text-slate-100;
 }
 
 .poca-loading-full p {
