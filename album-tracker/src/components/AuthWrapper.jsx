@@ -35,7 +35,7 @@ export default function AuthWrapper({ children }) {
         if (location.pathname === '/login') {
             return children
         }
-        return <Navigate to="/login" replace />
+        return <Navigate to="/login?error=unauthorized" replace />
     }
 
     // 3. 정상 권한 사용자가 로그인 페이지 접근 시 홈으로 리다이렉트

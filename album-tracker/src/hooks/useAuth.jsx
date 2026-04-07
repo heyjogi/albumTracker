@@ -18,9 +18,7 @@ export const AuthProvider = ({ children }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        // 이미 동일한 유저로 체크했으면 재조회 생략 (탭 전환 등)
-        if (checkedUserIdRef.current === session.user.id) return;
-        checkedUserIdRef.current = session.user.id;
+        setLoading(true); // Re-validate status on session change
         checkUserStatus(session.user);
       } else {
         checkedUserIdRef.current = null;
@@ -35,34 +33,47 @@ export const AuthProvider = ({ children }) => {
 
   const checkUserStatus = async (currentUser) => {
     try {
-      // 1. 허용 이메일 확인
+      // 허용 이메일 DB 확인 (캐시 없이 매번 확인 — 삭제된 계정 즉시 차단)
       const { data: allowedData, error: allowedError } = await supabase
         .from("allowed_emails")
         .select("email")
         .eq("email", currentUser.email)
         .maybeSingle();
 
-      if (!allowedData) {
+      console.log("Allowed email check result (DB):", { allowedData, email: currentUser.email });
+
+      if (allowedError) {
+        console.error("Error checking allowed email:", allowedError);
         setIsAllowed(false);
         setProfile(null);
-      } else {
-        setIsAllowed(true);
-
-        // 2. 프로필 조회 - RLS 정책 우회를 위해 individual_profile_access 정책 활용
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("nickname")
-          .eq("id", currentUser.id)
-          .single();
-
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-        }
-        setProfile(profileData || null);
+        await supabase.auth.signOut();
+        return;
       }
+
+      const isUserAllowed = !!allowedData;
+      setIsAllowed(isUserAllowed);
+
+      if (!isUserAllowed) {
+        setProfile(null);
+        await supabase.auth.signOut(); // 권한 없으면 세션 즉시 종료
+        return;
+      }
+
+      // 프로필 조회
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("nickname")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+      }
+      setProfile(profileData || null);
     } catch (err) {
       console.error("checkUserStatus error:", err);
       setIsAllowed(false);
+      await supabase.auth.signOut();
     } finally {
       setLoading(false);
     }
@@ -76,7 +87,9 @@ export const AuthProvider = ({ children }) => {
     if (error) console.error(error.message);
   };
 
-  const signOut = async () => await supabase.auth.signOut();
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <AuthContext.Provider
