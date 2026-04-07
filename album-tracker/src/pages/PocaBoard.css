@@ -28,11 +28,47 @@
 }
 
 .poca-header__actions .poca-export-btn {
-  @apply px-1 sm:px-2 py-1 rounded hover:text-red-300 transition;
+  @apply px-1 sm:px-2 py-1 rounded hover:text-brand-400 text-brand-500 transition flex items-center justify-center border border-transparent;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.poca-export-btn.loading {
+  @apply opacity-100 cursor-wait bg-slate-800 border-slate-700;
 }
 
 .poca-export-btn:disabled {
   @apply opacity-50 cursor-not-allowed;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(217, 57, 21, 0.2);
+  border-top-color: #d93915;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+.spinner--large {
+  width: 40px;
+  height: 40px;
+  border-width: 3px;
+  border-top-color: #d93915;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/*  전체 화면 로딩  */
+.poca-loading-full {
+  @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900 text-slate-100 font-galmuri;
+}
+
+.poca-loading-full p {
+  @apply mt-4 text-sm tracking-widest text-brand-500 font-bold;
 }
 
 .poca-header__divider {

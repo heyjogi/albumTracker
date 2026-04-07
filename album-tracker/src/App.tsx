@@ -10,6 +10,8 @@ import PocaBoard from './pages/PocaBoard'
 import { AuthProvider } from './hooks/useAuth'
 import AuthWrapper from './components/AuthWrapper'
 
+import { SpeedInsights } from '@vercel/speed-insights/react'
+
 function App() {
   return (
     <AuthProvider>
@@ -26,6 +28,7 @@ function App() {
           </Routes>
         </AuthWrapper>
       </BrowserRouter>
+      <SpeedInsights />
     </AuthProvider>
   )
 }

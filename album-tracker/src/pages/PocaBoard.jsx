@@ -27,13 +27,24 @@ function saveToStorage(data) {
   }
 }
 
-// 보드 구조(앨범/카드 리스트) 캐시 유틸 (sessionStorage 사용)
-const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v1'
+// 보드 구조(앨범/카드 리스트) 캐시 유틸 (localStorage 사용 + 1시간 TTL)
+const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v2'
+const CACHE_TTL = 60 * 60 * 1000 // 1시간
 
 function loadStructureFromCache() {
   try {
-    const raw = sessionStorage.getItem(STRUCTURE_CACHE_KEY)
-    return raw ? JSON.parse(raw) : null
+    const raw = localStorage.getItem(STRUCTURE_CACHE_KEY)
+    if (!raw) return null
+    
+    const { data, timestamp } = JSON.parse(raw)
+    const isExpired = Date.now() - timestamp > CACHE_TTL
+    
+    if (isExpired) {
+      localStorage.removeItem(STRUCTURE_CACHE_KEY)
+      return null
+    }
+    
+    return data
   } catch {
     return null
   }
@@ -41,9 +52,13 @@ function loadStructureFromCache() {
 
 function saveStructureToCache(data) {
   try {
-    sessionStorage.setItem(STRUCTURE_CACHE_KEY, JSON.stringify(data))
+    const cacheData = {
+      data,
+      timestamp: Date.now()
+    }
+    localStorage.setItem(STRUCTURE_CACHE_KEY, JSON.stringify(cacheData))
   } catch {
-    console.error('sessionStorage 저장 실패')
+    console.error('localStorage 구조 저장 실패')
   }
 }
 
@@ -101,7 +116,13 @@ function PocaCard({ card, count, onClick, layout }) {
     >
       <div className="poca-card__inner">
         {card.image ? (
-          <img src={card.image} alt={card.name} className="poca-card__img" />
+          <img 
+            src={card.image} 
+            alt={card.name} 
+            className="poca-card__img" 
+            loading="lazy" 
+            decoding="async" 
+          />
         ) : (
           <div className="poca-card__placeholder">
             <span className="poca-card__initial">{card.name.charAt(0)}</span>
@@ -260,13 +281,16 @@ function PocaBoardView(props) {
           <button
             onClick={() => setExportModal(true)}
             disabled={exporting}
-            className="poca-export-btn"
+            className={`poca-export-btn ${exporting ? 'loading' : ''}`}
             title="이미지 저장"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
-            </svg>
-
+            {exporting ? (
+              <div className="spinner"></div>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
+              </svg>
+            )}
           </button>
           <span className="poca-header__divider">|</span>
           <button onClick={handleReset} className="poca-reset-btn">초기화</button>
@@ -353,6 +377,18 @@ export default function PocaBoard() {
   const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
+    const cached = loadStructureFromCache()
+    
+    // 캐시가 유효하면 네트워크 요청을 스킵합니다. (서버 부하 방지)
+    if (cached && cached.length > 0) {
+      setAlbumVersions(cached)
+      if (!activeTab && cached.length > 0) {
+        setActiveTab(cached[0].id)
+      }
+      setLoading(false)
+      return
+    }
+
     const fetchData = async () => {
       try {
         const { data, error } = await supabase
@@ -442,23 +478,15 @@ export default function PocaBoard() {
           return indexA - indexB
         })
 
-        // 데이터가 실제로 변경되었을 때만 업데이트 (불필요한 리렌더링 및 캐시 갱신 방지)
-        const currentStructure = loadStructureFromCache()
-        if (JSON.stringify(finalTabs) !== JSON.stringify(currentStructure)) {
-          setAlbumVersions(finalTabs)
-          saveStructureToCache(finalTabs)
+        setAlbumVersions(finalTabs)
+        saveStructureToCache(finalTabs)
 
-          // 탭이 하나도 선택되지 않은 경우만 첫 번째 탭 선택
-          if (!activeTab && finalTabs.length > 0) {
-            setActiveTab(finalTabs[0].id)
-          }
+        if (!activeTab && finalTabs.length > 0) {
+          setActiveTab(finalTabs[0].id)
         }
       } catch (err) {
-        console.error('백그라운드 데이터 갱신 실패:', err)
-        // 캐시가 없는 경우에만 에러 표시
-        if (!loadStructureFromCache()) {
-          setError('데이터 불러오기 실패')
-        }
+        console.error('데이터 불러오기 실패:', err)
+        setError('데이터 불러오기 실패')
       } finally {
         setLoading(false)
       }
@@ -533,8 +561,16 @@ export default function PocaBoard() {
   const ownedCards = activeCards.filter(c => (cardCounts[c.id] || 0) > 0).length
   const dupCards = activeCards.filter(c => (cardCounts[c.id] || 0) > 1).length
 
-  if (loading) return <div>로딩중...</div>
-  if (error) return <div>{error}</div>
+  if (loading) {
+    return (
+      <div className="poca-loading-full">
+        <div className="spinner spinner--large"></div>
+        <p>포카보드 불러오는 중...</p>
+      </div>
+    )
+  }
+  
+  if (error) return <div className="poca-loading-full"><p>{error}</p></div>
 
   return (
     <PocaBoardView

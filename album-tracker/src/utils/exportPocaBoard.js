@@ -267,12 +267,22 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
   document.body.appendChild(container)
 
   const imgs = container.querySelectorAll('img')
-  await Promise.allSettled(
-    Array.from(imgs).map(img =>
-      img.complete ? Promise.resolve()
-        : new Promise(res => { img.onload = res; img.onerror = res })
-    )
-  )
+  const loadPromises = Array.from(imgs).map(img => {
+    if (img.complete) return Promise.resolve()
+    return new Promise(res => {
+      img.onload = res
+      img.onerror = res
+      // 10초 타임아웃 추가 (개별 이미지)
+      setTimeout(res, 10000)
+    })
+  })
+
+  // 전체 로딩 타임아웃 30초
+  await Promise.race([
+    Promise.all(loadPromises),
+    new Promise(res => setTimeout(res, 30000))
+  ])
+  
   await document.fonts.ready
 
   try {
