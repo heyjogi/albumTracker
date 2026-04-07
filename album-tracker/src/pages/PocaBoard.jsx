@@ -28,22 +28,22 @@ function saveToStorage(data) {
 }
 
 // 보드 구조(앨범/카드 리스트) 캐시 유틸 (localStorage 사용 + 1시간 TTL)
-const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v2'
-const CACHE_TTL = 60 * 60 * 1000 // 1시간
+const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v3'
+const CACHE_TTL = 2 * 60 * 60 * 1000 // 2시간으로 연장 (트래픽 최적화)
 
 function loadStructureFromCache() {
   try {
     const raw = localStorage.getItem(STRUCTURE_CACHE_KEY)
     if (!raw) return null
-    
+
     const { data, timestamp } = JSON.parse(raw)
     const isExpired = Date.now() - timestamp > CACHE_TTL
-    
+
     if (isExpired) {
       localStorage.removeItem(STRUCTURE_CACHE_KEY)
       return null
     }
-    
+
     return data
   } catch {
     return null
@@ -62,13 +62,28 @@ function saveStructureToCache(data) {
   }
 }
 
-// storage image_path → 공개 URL 변환
-function getImageUrl(imagePath) {
+// storage image_path → 공개 URL 변환 (로컬 우선 정책)
+function getImageUrl(imagePath, type = 'album') {
   if (!imagePath) return null
+
+  // 파일명만 추출
+  const filename = imagePath.split('/').pop()
+  const nameOnly = filename.replace(/\.[^/.]+$/, "")
+
+  // 로컬 경로 생성
+  const localDir = type === 'pob' ? '/image/pob' : '/image/album'
+  const localPath = `${localDir}/${nameOnly}.webp`
+
+  return localPath
+}
+
+// Supabase 원본 URL (폴백용)
+function getRemoteUrl(imagePath) {
+  if (!imagePath) return null
+  if (imagePath.startsWith('http')) return imagePath // 이미 풀 URL인 경우
   return `${SUPABASE_URL}/storage/v1/object/public/event-images/${imagePath}`
 }
 
-// DB 데이터 → 구조 변환
 function transformData(dbData) {
   return dbData.map(type => {
     const grouped = {}
@@ -85,7 +100,8 @@ function transformData(dbData) {
           grouped[groupKey].push({
             id: comp.id,
             name: comp.member_names?.member_name ?? comp.component_name,
-            image: getImageUrl(comp.image_path),
+            image: getImageUrl(comp.image_path, 'album'),
+            remoteImage: getRemoteUrl(comp.image_path),
           })
         })
 
@@ -105,8 +121,23 @@ function transformData(dbData) {
 function PocaCard({ card, count, onClick, layout }) {
   const hasCard = count > 0
   const isDuplicate = count > 1
+  const [imgSrc, setImgSrc] = useState(card.image)
+  const [isFallback, setIsFallback] = useState(false)
 
   const layoutClass = layout ? `poca-card--${layout}` : ''
+
+  const handleImgError = () => {
+    if (!isFallback && card.remoteImage) {
+      setImgSrc(card.remoteImage)
+      setIsFallback(true)
+    }
+  }
+
+  // card.image가 바뀌면 (탭 전환 등) 이미지 소스 리셋
+  useEffect(() => {
+    setImgSrc(card.image)
+    setIsFallback(false)
+  }, [card.image])
 
   return (
     <div
@@ -115,13 +146,14 @@ function PocaCard({ card, count, onClick, layout }) {
       title={`${card.name} (${count}장)`}
     >
       <div className="poca-card__inner">
-        {card.image ? (
-          <img 
-            src={card.image} 
-            alt={card.name} 
-            className="poca-card__img" 
-            loading="lazy" 
-            decoding="async" 
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt={card.name}
+            className="poca-card__img"
+            loading="lazy"
+            decoding="async"
+            onError={handleImgError}
           />
         ) : (
           <div className="poca-card__placeholder">
@@ -378,7 +410,7 @@ export default function PocaBoard() {
 
   useEffect(() => {
     const cached = loadStructureFromCache()
-    
+
     // 캐시가 유효하면 네트워크 요청을 스킵합니다. (서버 부하 방지)
     if (cached && cached.length > 0) {
       setAlbumVersions(cached)
@@ -451,7 +483,8 @@ export default function PocaBoard() {
               groupedMigongpo[groupName].push({
                 id: item.id,
                 name: item.member_name,
-                image: item.event_image_url,
+                image: getImageUrl(item.event_image_url, 'pob'),
+                remoteImage: getRemoteUrl(item.event_image_url),
               })
             })
 
@@ -569,7 +602,7 @@ export default function PocaBoard() {
       </div>
     )
   }
-  
+
   if (error) return <div className="poca-loading-full"><p>{error}</p></div>
 
   return (
