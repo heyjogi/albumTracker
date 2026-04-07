@@ -24,7 +24,7 @@ export default function Privacy() {
                     </p>
                     <ul className="privacy-list">
                         <li>이메일 주소 및 Google 계정 고유 식별자</li>
-                        <li className="opacity-60 text-xs">※ Google 로그인 과정에서 이름 및 프로필 이미지가 제공될 수 있으나, 본 서비스에서는 이를 별도로 저장하거나 활용하지 않습니다.</li>
+                        <li className="opacity-60 text-xs">Google 로그인 과정에서 이름 및 프로필 이미지 정보가 제공될 수 있으며, 해당 정보는 인증 과정에서만 사용되며 서비스 기능에서는 별도로 활용되지 않습니다.</li>
                     </ul>
                 </section>
 

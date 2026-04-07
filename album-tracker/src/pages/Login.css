@@ -58,11 +58,15 @@
     @apply text-xs text-slate-50 mt-2;
 }
 
-/* 개인정보처리방침 링크
+.login-hint {
+    @apply text-xs text-slate-400 mt-2;
+}
+
+/* 개인정보처리방침 링크 */
 .login-privacy-link {
-    @apply w-full mt-6 text-center;
+    @apply text-xs text-slate-400 mt-2 underline;
 }
 
 .privacy-link {
     @apply text-sm text-slate-500 hover:text-brand-600 transition-colors duration-200 underline;
-} */
+}
