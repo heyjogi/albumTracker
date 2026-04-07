@@ -7,8 +7,8 @@
   font-weight: 400;
   font-display: swap;
   src: local('Galmuri9 Regular'),
-       url('https://cdn.jsdelivr.net/npm/galmuri/dist/Galmuri9.woff2') format('woff2'),
-       url('https://cdn.jsdelivr.net/npm/galmuri/dist/Galmuri9.ttf') format('truetype');
+    url('https://cdn.jsdelivr.net/npm/galmuri/dist/Galmuri9.woff2') format('woff2'),
+    url('https://cdn.jsdelivr.net/npm/galmuri/dist/Galmuri9.ttf') format('truetype');
 }
 
 @theme {
@@ -23,21 +23,21 @@
   --color-brand-800: #006677;
   --color-brand-900: #003344;
   --color-brand-950: #00111a;
-  
+
   --color-slate-50: #001111;
   --color-slate-100: #003344;
-  --color-slate-200: #050a0f; 
-  --color-slate-300: #00f0ff; 
-  --color-slate-400: #00aaaa; 
-  --color-slate-500: #00ff00; 
-  --color-slate-600: #00f0ff; 
+  --color-slate-200: #050a0f;
+  --color-slate-300: #00f0ff;
+  --color-slate-400: #00aaaa;
+  --color-slate-500: #00ff00;
+  --color-slate-600: #00f0ff;
   --color-slate-700: #00f0ff;
-  --color-slate-800: #00f0ff; 
-  --color-slate-900: #0a111a; 
+  --color-slate-800: #00f0ff;
+  --color-slate-900: #0a111a;
   --color-slate-950: #000000;
-  
+
   --color-white: #000000;
-  
+
   --font-sans: 'Galmuri9', monospace;
 }
 
@@ -51,7 +51,7 @@ body {
   background-color: #000000 !important;
   color: #00f0ff !important;
   /* Cyber grid background matching the dashboard image */
-  background-image: 
+  background-image:
     linear-gradient(rgba(0, 240, 255, 0.15) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 240, 255, 0.15) 1px, transparent 1px);
   background-size: 20px 20px;
@@ -71,7 +71,10 @@ body {
   /* Glow overrides removed */
 }
 
-h1, h2, h3, label {
+h1,
+h2,
+h3,
+label {
   color: #00f0ff !important;
   letter-spacing: 1px;
 }
@@ -94,18 +97,23 @@ button.bg-brand-600:hover {
 }
 
 /* Inputs and Selects */
-input, select {
-  background-color: #00111a !important; 
+input,
+select {
+  background-color: #00111a !important;
   color: #00f0ff !important;
   border: none !important;
 }
-input:focus, select:focus {
+
+input:focus,
+select:focus {
   outline: none !important;
   background-color: #002233 !important;
 }
 
 /* Badges / Micro components */
-.bg-brand-50, .bg-slate-50, .bg-slate-100 {
+.bg-brand-50,
+.bg-slate-50,
+.bg-slate-100 {
   background-color: rgba(0, 240, 255, 0.1) !important;
   border: none !important;
   color: #00f0ff !important;
@@ -117,15 +125,28 @@ svg {
 }
 
 /* Text slate overrides */
-.text-slate-500, .text-slate-400 {
+.text-slate-500,
+.text-slate-400 {
   color: #00aaaa !important;
 }
 
-.text-slate-800, .text-slate-700 {
+.text-slate-800,
+.text-slate-700 {
   color: #00f0ff !important;
 }
 
 /* Force standard font weight for clear pixel appearance */
 * {
   font-weight: 400 !important;
+}
+
+.global-footer {
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #00aaaa;
+  opacity: 0.6;
+  border-top: 1px solid rgba(0, 240, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
 }
