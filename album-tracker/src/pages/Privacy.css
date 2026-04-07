@@ -1,0 +1,56 @@
+@reference "../index.css";
+
+.privacy-wrap {
+    @apply min-h-screen flex flex-col items-center py-6 sm:py-10 px-4;
+}
+
+.privacy-back-btn {
+    @apply self-start mb-6 flex items-center gap-2 text-brand-500 font-bold text-xs tracking-widest hover:text-brand-400 transition-colors uppercase;
+}
+
+.privacy-container {
+    @apply max-w-2xl w-full bg-white p-6 sm:p-10;
+    /* index.css forces .bg-white to be dark with cyan border and no radius */
+}
+
+.privacy-title {
+    @apply text-2xl sm:text-3xl font-black mb-8 text-center uppercase tracking-widest;
+}
+
+.privacy-section {
+    @apply mb-10;
+}
+
+.privacy-heading {
+    @apply text-lg font-bold mb-4 border-b border-brand-500/20 pb-2 flex items-center gap-2;
+}
+
+.privacy-heading::before {
+    content: '>';
+    @apply opacity-60 font-black;
+}
+
+.privacy-text {
+    @apply leading-relaxed mb-2 text-sm sm:text-base;
+}
+
+.privacy-list {
+    @apply list-none space-y-2 mt-4;
+}
+
+.privacy-list li {
+    @apply text-sm sm:text-base flex items-start gap-2;
+}
+
+.privacy-list li::before {
+    content: '▪';
+    @apply text-brand-500 mt-1;
+}
+
+.privacy-footer {
+    @apply mt-12 pt-6 border-t border-brand-500/20;
+}
+
+.privacy-date {
+    @apply text-xs opacity-60 text-center;
+}

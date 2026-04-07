@@ -145,7 +145,7 @@ export default function Settings() {
         </section>
 
         <section className="st-section">
-          <h2 className="st-section-title">소속 팀</h2>
+          <h2 className="st-section-title">분철 팀</h2>
           <div className="st-card st-teams-card">
             {myTeams.length > 0 ? (
               <ul className="st-teams-list">
@@ -171,6 +171,21 @@ export default function Settings() {
             ) : (
               <p className="st-empty-text">소속 팀이 없습니다.</p>
             )}
+          </div>
+        </section>
+
+        <section className="st-section">
+          <h2 className="st-section-title">서비스 정보</h2>
+          <div className="st-card st-info-card">
+            <p className="st-info-text">
+              이 사이트는 서비스 개선을 위해 익명의 방문 통계를 수집합니다.
+            </p>
+            <button
+              onClick={() => navigate("/privacy")}
+              className="st-btn-privacy"
+            >
+              개인정보처리방침
+            </button>
           </div>
         </section>
 

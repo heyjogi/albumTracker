@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext({});
@@ -7,25 +7,26 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [isAllowed, setIsAllowed] = useState(null);
   const [loading, setLoading] = useState(true);
-  const checkedUserIdRef = useRef(null);
 
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
       if (session?.user) {
-        // 이미 동일한 유저로 체크했으면 재조회 생략 (탭 전환 등)
-        if (checkedUserIdRef.current === session.user.id) return;
-        checkedUserIdRef.current = session.user.id;
-        checkUserStatus(session.user);
+        // INITIAL_SESSION이나 SIGNED_IN 이벤트 시에만 프로필을 가져옵니다.
+        // TOKEN_REFRESH 등 부수적인 이벤트에서의 중복 호출을 방지합니다.
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+          setLoading(true);
+          fetchProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
       } else {
-        checkedUserIdRef.current = null;
         setProfile(null);
-        setIsAllowed(null);
         setLoading(false);
       }
     });
@@ -33,36 +34,21 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkUserStatus = async (currentUser) => {
+  // allowed_emails 조회 제거 — Supabase signup 차단이 허용 관리 역할을 대신함
+  // 로그인 가능한 사람 = 대시보드에서 미리 등록된 사람뿐이므로 추가 체크 불필요
+  const fetchProfile = async (userId) => {
     try {
-      // 1. 허용 이메일 확인
-      const { data: allowedData, error: allowedError } = await supabase
-        .from("allowed_emails")
-        .select("email")
-        .eq("email", currentUser.email)
-        .maybeSingle();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("nickname")
+        .eq("id", userId)
+        .single();
 
-      if (!allowedData) {
-        setIsAllowed(false);
-        setProfile(null);
-      } else {
-        setIsAllowed(true);
-
-        // 2. 프로필 조회 - RLS 정책 우회를 위해 individual_profile_access 정책 활용
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("nickname")
-          .eq("id", currentUser.id)
-          .single();
-
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-        }
-        setProfile(profileData || null);
-      }
+      if (error) console.error("Error fetching profile:", error);
+      setProfile(data || null);
     } catch (err) {
-      console.error("checkUserStatus error:", err);
-      setIsAllowed(false);
+      console.error("fetchProfile error:", err);
+      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -76,7 +62,9 @@ export const AuthProvider = ({ children }) => {
     if (error) console.error(error.message);
   };
 
-  const signOut = async () => await supabase.auth.signOut();
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <AuthContext.Provider
@@ -84,7 +72,6 @@ export const AuthProvider = ({ children }) => {
         user,
         session,
         profile,
-        isAllowed,
         loading,
         signInWithGoogle,
         signOut,

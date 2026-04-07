@@ -25,12 +25,12 @@
 }
 
 .login-btn {
-    @apply w-full py-4 px-6 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-md transition-colors duration-200 flex items-center justify-center gap-3;
+    @apply w-full py-4 px-6 bg-brand-50 hover:bg-brand-700 text-slate-400 font-semibold rounded-xl shadow-md transition-colors duration-200 flex items-center justify-center gap-3;
 }
 
-.login-btn-icon {
-    @apply w-6 h-6 bg-white rounded-full p-1;
-}
+/* .login-btn-icon {
+    @apply w-6 h-6 rounded-full p-1;
+} */
 
 /* 구분선 */
 .login-divider {
@@ -51,13 +51,18 @@
 
 /* 포카드볼판 버튼 */
 .login-poca-btn {
-    @apply w-full py-3 px-6 bg-brand-400 border-2 border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-600 font-semibold rounded-xl transition-colors duration-200 flex items-center gap-2;
-}
-
-.login-poca-btn {
-    @apply w-full py-3 px-6 bg-brand-50 hover:bg-slate-50 border-2 border-slate-200 text-slate-600 font-semibold rounded-xl transition-colors duration-200 flex items-center gap-2;
+    @apply w-full py-3 px-6 bg-brand-600 text-white hover:bg-brand-800 border-2 border-brand-400 hover:border-brand-300 font-semibold rounded-xl transition-colors duration-200 flex items-center gap-2;
 }
 
 .login-poca-hint {
-    @apply text-xs text-slate-400 mt-2;
+    @apply text-xs text-slate-50 mt-2;
 }
+
+/* 개인정보처리방침 링크
+.login-privacy-link {
+    @apply w-full mt-6 text-center;
+}
+
+.privacy-link {
+    @apply text-sm text-slate-500 hover:text-brand-600 transition-colors duration-200 underline;
+} */
