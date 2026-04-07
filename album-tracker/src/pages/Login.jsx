@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import './Login.css'
 
@@ -74,6 +74,13 @@ export default function Login() {
                         </span>
                     </div>
                 </button>
+
+                {/* 개인정보처리방침 링크 */}
+                <div className="login-privacy-link">
+                    <Link to="/privacy" className="privacy-link">
+                        개인정보처리방침
+                    </Link>
+                </div>
             </div>
         </div>
     );

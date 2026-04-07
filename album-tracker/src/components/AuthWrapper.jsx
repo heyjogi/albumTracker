@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 import './AuthWrapper.css'
 
 // 비회원도 접근 가능한 경로
-const PUBLIC_PATHS = ['/login', '/pocaboard']
+const PUBLIC_PATHS = ['/login', '/pocaboard', '/privacy']
 
 export default function AuthWrapper({ children }) {
     const { user, profile, isAllowed, loading } = useAuth()

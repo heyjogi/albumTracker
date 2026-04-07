@@ -7,6 +7,7 @@ import CreatePurchase from './pages/CreatPurchase'
 import AllPurchases from './pages/AllPurchases'
 import Settings from './pages/Settings'
 import PocaBoard from './pages/PocaBoard'
+import Privacy from './pages/Privacy'
 import { AuthProvider } from './hooks/useAuth'
 import AuthWrapper from './components/AuthWrapper'
 
@@ -27,6 +28,7 @@ function App() {
               <Route path="/purchases" element={<AllPurchases />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/pocaboard" element={<PocaBoard />} />
+              <Route path="/privacy" element={<Privacy />} />
               <Route path="/" element={<Main />} />
             </Routes>
           </main>
