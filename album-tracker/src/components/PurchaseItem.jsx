@@ -135,7 +135,7 @@ export default function PurchaseItem({ item, refresh }) {
           <div className="pi-img-pl">
             {item.event_image_url ? (
               <img
-                src={item.event_image_url}
+                src={`/image/pob/${item.event_image_url?.split('/').pop()}`}
                 alt={albumName}
                 className="pi-img-photo"
               />

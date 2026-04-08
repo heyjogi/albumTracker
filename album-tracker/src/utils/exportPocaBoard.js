@@ -184,13 +184,6 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
             img.crossOrigin = 'anonymous'
             img.style.cssText = `width: 100%; height: 100%; object-fit: cover; display: block;`
             
-            // 로컬 파일이 없을 경우 Supabase 원본으로 폴백
-            img.onerror = () => {
-              if (card.remoteImage && img.src !== card.remoteImage) {
-                img.src = card.remoteImage
-              }
-            }
-            
             cardInner.appendChild(img)
           }
 
