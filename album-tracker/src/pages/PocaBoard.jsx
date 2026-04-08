@@ -62,26 +62,11 @@ function saveStructureToCache(data) {
   }
 }
 
-// storage image_path → 공개 URL 변환 (로컬 우선 정책)
+// 로컬 서빙 경로 생성 (파일명이 이미 .webp로 수정됨)
 function getImageUrl(imagePath, type = 'album') {
   if (!imagePath) return null
-
-  // 파일명만 추출
-  const filename = imagePath.split('/').pop()
-  const nameOnly = filename.replace(/\.[^/.]+$/, "")
-
-  // 로컬 경로 생성
   const localDir = type === 'pob' ? '/image/pob' : '/image/album'
-  const localPath = `${localDir}/${nameOnly}.webp`
-
-  return localPath
-}
-
-// Supabase 원본 URL (폴백용)
-function getRemoteUrl(imagePath) {
-  if (!imagePath) return null
-  if (imagePath.startsWith('http')) return imagePath // 이미 풀 URL인 경우
-  return `${SUPABASE_URL}/storage/v1/object/public/event-images/${imagePath}`
+  return `${localDir}/${imagePath.split('/').pop()}`
 }
 
 function transformData(dbData) {
@@ -101,7 +86,6 @@ function transformData(dbData) {
             id: comp.id,
             name: comp.member_names?.member_name ?? comp.component_name,
             image: getImageUrl(comp.image_path, 'album'),
-            remoteImage: getRemoteUrl(comp.image_path),
           })
         })
 
@@ -121,23 +105,8 @@ function transformData(dbData) {
 function PocaCard({ card, count, onClick, layout }) {
   const hasCard = count > 0
   const isDuplicate = count > 1
-  const [imgSrc, setImgSrc] = useState(card.image)
-  const [isFallback, setIsFallback] = useState(false)
 
   const layoutClass = layout ? `poca-card--${layout}` : ''
-
-  const handleImgError = () => {
-    if (!isFallback && card.remoteImage) {
-      setImgSrc(card.remoteImage)
-      setIsFallback(true)
-    }
-  }
-
-  // card.image가 바뀌면 (탭 전환 등) 이미지 소스 리셋
-  useEffect(() => {
-    setImgSrc(card.image)
-    setIsFallback(false)
-  }, [card.image])
 
   return (
     <div
@@ -146,14 +115,13 @@ function PocaCard({ card, count, onClick, layout }) {
       title={`${card.name} (${count}장)`}
     >
       <div className="poca-card__inner">
-        {imgSrc ? (
+        {card.image ? (
           <img
-            src={imgSrc}
+            src={card.image}
             alt={card.name}
             className="poca-card__img"
             loading="lazy"
             decoding="async"
-            onError={handleImgError}
           />
         ) : (
           <div className="poca-card__placeholder">
@@ -484,7 +452,6 @@ export default function PocaBoard() {
                 id: item.id,
                 name: item.member_name,
                 image: getImageUrl(item.event_image_url, 'pob'),
-                remoteImage: getRemoteUrl(item.event_image_url),
               })
             })
 

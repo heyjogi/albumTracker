@@ -686,7 +686,7 @@ export default function CreatePurchase() {
                       )}
                       {m.event_image_url ? (
                         <img
-                          src={m.event_image_url}
+                          src={`/image/pob/${m.event_image_url?.split('/').pop()}`}
                           alt={m.member_name}
                           className="cp-member-img-photo"
                         />
