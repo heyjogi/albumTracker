@@ -1,8 +1,10 @@
 {
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+  "functions": {
+    "api/verify-card.js": {
+      "maxDuration": 60
+    },
+    "api/admin-approve.js": {
+      "maxDuration": 10
     }
-  ]
+  }
 }

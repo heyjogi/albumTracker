@@ -186,6 +186,12 @@ export default function Settings() {
             >
               개인정보처리방침
             </button>
+            <button
+              onClick={() => navigate("/admin-auth")}
+              className="st-btn-admin"
+            >
+              스밍인증 관리 (ADMIN)
+            </button>
           </div>
         </section>
 

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { exportPocaBoardImage } from '../utils/exportPocaBoard'
 import { getCardLayout } from '../utils/cardLayout'
+import { useStreamingAuth } from '../hooks/useStreamingAuth'
+import StreamingAuthModal from '../components/StreamingAuthModal'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
@@ -269,7 +271,11 @@ function PocaBoardView(props) {
     setModal,
     handleModalSave,
     exportModal,
-    setExportModal
+    setExportModal,
+    showAuthModal,
+    setShowAuthModal,
+    handleAuthSuccess,
+    handleExportButtonClick
   } = props
 
   return (
@@ -279,7 +285,7 @@ function PocaBoardView(props) {
         <h1>Caligo pt.2</h1>
         <div className="poca-header__actions">
           <button
-            onClick={() => setExportModal(true)}
+            onClick={handleExportButtonClick}
             disabled={exporting}
             className={`poca-export-btn ${exporting ? 'loading' : ''}`}
             title="이미지 저장"
@@ -337,6 +343,16 @@ function PocaBoardView(props) {
         })}
       </div>
 
+      {showAuthModal && (
+        <StreamingAuthModal
+          onSuccess={handleAuthSuccess}
+          onClose={() => {
+            setShowAuthModal(false)
+            setPendingExport(null)
+          }}
+        />
+      )}
+
       {
         modal && (
           <CountModal
@@ -375,6 +391,34 @@ export default function PocaBoard() {
     return cached && cached.length > 0 ? cached[0].id : null
   })
   const [exporting, setExporting] = useState(false)
+
+  // -- Streaming Auth --
+  const { isVerified, saveToken } = useStreamingAuth()
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [pendingExport, setPendingExport] = useState(null)
+
+  const handleAuthSuccess = (token) => {
+    saveToken(token)
+    setShowAuthModal(false)
+    
+    // 이전에 저장하려던 동작이 있었다면 계속 진행
+    if (pendingExport) {
+      const { exportTabIds, excludeCompleted } = pendingExport
+      setPendingExport(null)
+      setTimeout(() => handleExport(exportTabIds, excludeCompleted), 100)
+    } else {
+      // 헤더 버튼으로 진입한 경우 인증 후 선택 모달 오픈
+      setExportModal(true)
+    }
+  }
+
+  const handleExportButtonClick = () => {
+    if (!isVerified) {
+      setShowAuthModal(true)
+    } else {
+      setExportModal(true)
+    }
+  }
 
   useEffect(() => {
     const cached = loadStructureFromCache()
@@ -589,6 +633,10 @@ export default function PocaBoard() {
       handleModalSave={handleModalSave}
       exportModal={exportModal}
       setExportModal={setExportModal}
+      showAuthModal={showAuthModal}
+      setShowAuthModal={setShowAuthModal}
+      handleAuthSuccess={handleAuthSuccess}
+      handleExportButtonClick={handleExportButtonClick}
     />
   )
 }

@@ -10,6 +10,7 @@ import PocaBoard from './pages/PocaBoard'
 import Privacy from './pages/Privacy'
 import { AuthProvider } from './hooks/useAuth'
 import AuthWrapper from './components/AuthWrapper'
+import AdminAuth from './pages/AdminAuth'
 
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Analytics } from '@vercel/analytics/react'
@@ -29,6 +30,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/pocaboard" element={<PocaBoard />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/admin-auth" element={<AdminAuth />} />
               <Route path="/" element={<Main />} />
             </Routes>
           </main>
