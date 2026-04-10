@@ -20,23 +20,25 @@ export default function Privacy() {
                 <section className="privacy-section">
                     <h2 className="privacy-heading">1. 수집하는 개인정보</h2>
                     <p className="privacy-text">
-                        본 서비스는 Google 로그인을 통해 다음의 정보를 수집합니다:
+                        본 서비스는 원활한 기능 제공을 위해 다음과 같은 정보를 수집 및 처리합니다:
                     </p>
                     <ul className="privacy-list">
-                        <li>이메일 주소 및 Google 계정 고유 식별자</li>
-                        <li className="opacity-60 text-xs">Google 로그인 과정에서 이름 및 프로필 이미지 정보가 제공될 수 있으며, 해당 정보는 인증 과정에서만 사용되며 서비스 기능에서는 별도로 활용되지 않습니다.</li>
+                        <li><strong>기본 인증 정보</strong>: Google 로그인을 통한 이메일 주소 및 고유 식별자</li>
+                        <li><strong>스밍 인증 정보</strong>: 인증 시 입력한 닉네임 및 플랫폼 정보</li>
+                        <li><strong>이미지 데이터</strong>: 스밍 인증 카드 이미지는 서버에서 글자 추출(OCR) 후 즉시 소거하며 서버에 저장하거나 로그를 기록하지 않습니다.</li>
+                        <li><strong>중복 방지 식별값</strong>: 동일 이미지의 재사용을 방지하기 위해 이미지의 SHA256 해시값(역추적이 불가능한 문자열)을 저장합니다.</li>
                     </ul>
                 </section>
 
                 <section className="privacy-section">
                     <h2 className="privacy-heading">2. 개인정보의 이용 목적</h2>
                     <p className="privacy-text">
-                        수집된 개인정보는 다음의 목적으로만 사용됩니다:
+                        수집된 정보는 다음의 목적으로만 사용됩니다:
                     </p>
                     <ul className="privacy-list">
-                        <li>사용자 인증 및 서비스 이용 권한 확인</li>
+                        <li>서비스 이용 권한 확인 및 부정이용 방지</li>
+                        <li>포카보드 이미지 저장(Export) 기능의 스밍 인증 여부 검증</li>
                         <li>앨범 구매 목록 및 통계 데이터 관리</li>
-                        <li>팀 내 구매 내역 공유</li>
                     </ul>
                 </section>
 
@@ -48,18 +50,19 @@ export default function Privacy() {
                     <ul className="privacy-list">
                         <li>서비스 이용 기록 (페이지뷰, 접속 빈도 등)</li>
                         <li>접속 로그 및 IP 정보</li>
-                        <li>쿠키(Cookie): 브라우저 설정에서 쿠키 수집을 거부할 수 있으나, 일부 서비스 이용에 제한이 있을 수 있습니다.</li>
+                        <li>쿠키(Cookie): 인증 토큰 유지 및 원활한 서비스 이용을 위해 사용됩니다.</li>
                     </ul>
                 </section>
 
                 <section className="privacy-section">
                     <h2 className="privacy-heading">4. 개인정보의 보관 및 파기</h2>
                     <p className="privacy-text">
-                        개인정보는 서비스 탈퇴 시 즉시 파기하는 것을 원칙으로 합니다.
+                        본 서비스는 불필요한 개인정보 보관을 최소화합니다.
                     </p>
                     <ul className="privacy-list">
-                        <li>탈퇴 요청 시 해당 계정과 연결된 모든 데이터는 즉시 삭제됩니다.</li>
-                        <li>단, 시스템 로그 등 서비스 운영상 불가피한 기록은 관련 법령(통신비밀보호법 등)에 따라 일정 기간 보관 후 삭제될 수 있습니다.</li>
+                        <li><strong>스밍 인증 이미지</strong>: OCR 처리 완료 후 즉시 파기됩니다.</li>
+                        <li><strong>수동 인증 대기 데이터</strong>: 관리자가 승인을 완료하거나 거절하는 즉시 관련 내역(메모 등)은 파기됩니다.</li>
+                        <li><strong>기본 계정 정보</strong>: 탈퇴 요청 시 즉시 삭제됩니다.</li>
                     </ul>
                 </section>
 
@@ -100,7 +103,7 @@ export default function Privacy() {
                 </section>
 
                 <div className="privacy-footer">
-                    <p className="privacy-date">최종 수정일: 2026년 4월 7일</p>
+                    <p className="privacy-date">최종 수정일: 2026년 4월 10일</p>
                 </div>
             </div>
         </div>

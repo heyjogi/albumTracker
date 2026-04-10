@@ -40,6 +40,11 @@
 
 .privacy-list li {
     @apply text-sm sm:text-base flex items-start gap-2;
+    word-break: keep-all;
+}
+
+.privacy-list li strong {
+    white-space: nowrap;
 }
 
 .privacy-list li::before {

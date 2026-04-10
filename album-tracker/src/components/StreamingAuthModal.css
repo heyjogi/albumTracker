@@ -1,0 +1,300 @@
+/* StreamingAuthModal.css */
+/* 프로젝트의 네온/사이버펑크 테마에 맞춰 스타일 업데이트 */
+
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 5, 10, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.auth-modal-content {
+  position: relative;
+  background: rgba(0, 10, 20, 0.95);
+  border: 1px solid #00f0ff;
+  border-radius: 0; /* 테마에 맞춰 각진 모서리 */
+  padding: 24px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+  animation: auth-modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #00f0ff;
+}
+
+@keyframes auth-modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.auth-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+  padding-bottom: 12px;
+}
+
+.auth-modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+  flex: 1;
+}
+
+.auth-close-btn, .auth-help-btn {
+  background: none;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: #00f0ff;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.auth-close-btn:hover, .auth-help-btn:hover {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: #00f0ff;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.auth-help-btn {
+  font-weight: bold;
+}
+
+/* 도움말 오버레이 영역 */
+.auth-help-content {
+  position: absolute;
+  top: 60px;
+  left: 20px;
+  right: 20px;
+  background: #00111a;
+  border: 1px solid #00ff00;
+  padding: 20px;
+  z-index: 10;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+}
+
+.auth-help-content h3 {
+  color: #00ff00;
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+}
+
+.auth-help-content ul {
+  margin: 0 0 16px 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #00ff00;
+}
+
+.auth-help-content li {
+  margin-bottom: 8px;
+}
+
+.auth-help-content button {
+  width: 100%;
+  padding: 8px;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.auth-subtitle {
+  color: #00aaaa;
+  font-size: 13px;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+/* 안내 메시지 */
+.auth-notices {
+  background: rgba(0, 240, 255, 0.05);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  padding: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-notices p {
+  margin: 0;
+  font-size: 11px;
+  color: #00aaaa;
+  line-height: 1.5;
+}
+
+/* 탭 */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  margin-bottom: 20px;
+}
+
+.auth-tabs button {
+  background: none;
+  border: none;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #00aaaa;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-tabs button.active {
+  background: rgba(0, 240, 255, 0.15);
+  color: #00f0ff;
+  box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.1);
+}
+
+/* 폼 요소 */
+.melon-form, .others-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.melon-form input[type="text"],
+.others-form input[type="text"],
+.others-form select,
+.others-form textarea {
+  width: 100%;
+  background: #000c14;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  padding: 10px 12px;
+  color: #00f0ff;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.melon-form input[type="text"]:focus,
+.others-form input[type="text"]:focus,
+.others-form textarea:focus {
+  border-color: #00f0ff;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.others-form textarea {
+  min-height: 80px;
+}
+
+/* 파일 업로드 */
+.file-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(0, 240, 255, 0.03);
+  border: 1px dashed rgba(0, 240, 255, 0.5);
+  padding: 30px 20px;
+  color: #00aaaa;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.file-upload-placeholder:hover {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: #00f0ff;
+}
+
+.preview-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+/* 제출 버튼 (형광 연두) */
+.submit-btn {
+  width: 100%;
+  background: rgba(0, 255, 0, 0.15);
+  border: 1px solid #00ff00;
+  padding: 12px;
+  color: #00ff00;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 0, 0.3);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+.submit-btn:disabled {
+  opacity: 0.4;
+  border-color: #005500;
+  color: #005500;
+  cursor: not-allowed;
+}
+
+/* 에러 메시지 */
+.error-message {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 0, 0, 0.05);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff5555;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* 대기 상태 */
+.pending-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.pending-container h3 {
+  color: #00ff00;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.pending-container button:first-of-type {
+  width: 100%;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  padding: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: #00aaaa;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}

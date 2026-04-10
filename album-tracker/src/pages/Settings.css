@@ -191,3 +191,7 @@
 .st-btn-privacy {
     @apply w-full py-2.5 px-4 text-sm font-bold text-brand-500 border border-brand-500/30 hover:bg-brand-500/10 transition-colors uppercase tracking-wider;
 }
+
+.st-btn-admin {
+    @apply w-full py-2.5 px-4 text-sm font-bold text-brand-500 border border-brand-500/30 hover:bg-brand-500/10 transition-colors uppercase tracking-wider;
+}

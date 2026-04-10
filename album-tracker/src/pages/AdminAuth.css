@@ -1,0 +1,203 @@
+@reference "../index.css";
+
+.admin-login-wrap {
+  padding: 40px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.admin-login-input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  background: rgba(0, 240, 255, 0.05);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: #00f0ff;
+  outline: none;
+}
+
+.admin-login-input:focus {
+  border-color: #00f0ff;
+}
+
+.admin-login-btn {
+  width: 100%;
+  padding: 10px;
+  background: #00f0ff;
+  color: #000;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-login-btn:hover {
+  background: #00ffcc;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+}
+
+.admin-auth-wrap {
+  padding: 20px;
+  min-height: 100vh;
+  background-color: #000;
+}
+
+.admin-auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.admin-back-btn {
+  background: none;
+  border: 1px solid #00f0ff;
+  color: #00f0ff;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+.admin-back-btn:hover {
+  background: rgba(0, 240, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.admin-title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  color: #00f0ff;
+  letter-spacing: 1px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-refresh-btn {
+  background: none;
+  border: none;
+  color: #00f0ff;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.3s;
+}
+
+.admin-refresh-btn:hover {
+  transform: rotate(180deg);
+  color: #00ff00;
+}
+
+.admin-loading-text {
+  color: #00f0ff;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #00f0ff;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+.admin-table thead {
+  background-color: #00111a;
+}
+
+.admin-table th {
+  padding: 12px;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.admin-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+  font-size: 0.9rem;
+}
+
+.admin-empty-row {
+  text-align: center;
+  padding: 40px !important;
+  color: #00aaaa;
+  font-style: italic;
+}
+
+.admin-action-btn {
+  padding: 4px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.admin-approve-btn {
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  margin-right: 8px;
+}
+
+.admin-approve-btn:hover:not(:disabled) {
+  background: #00ff00;
+  color: #000;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.admin-reject-btn {
+  background: rgba(255, 0, 0, 0.05);
+  border: 1px solid #ff0000;
+  color: #ff0000;
+}
+
+.admin-reject-btn:hover:not(:disabled) {
+  background: #ff0000;
+  color: #000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+.admin-action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* --- Testing Only --- */
+.admin-danger-zone {
+  margin-top: 60px;
+  padding: 20px;
+  border: 1px dashed #ff0000;
+  background: rgba(255, 0, 0, 0.05);
+  text-align: center;
+}
+
+.admin-danger-title {
+  color: #ff0000;
+  margin-top: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.admin-reset-btn {
+  background: none;
+  border: 1px solid #ff0000;
+  color: #ff0000;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.admin-reset-btn:hover {
+  background: #ff0000;
+  color: #000;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+}
