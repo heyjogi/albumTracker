@@ -29,7 +29,7 @@ export default function CreatePurchase() {
   const [teams, setTeams] = useState([]);
   const [albums, setAlbums] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
-  const [allTeamMembers, setAllTeamMembers] = useState([]);
+  // const [allTeamMembers, setAllTeamMembers] = useState([]);
   const [albumMembers, setAlbumMembers] = useState([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
   const [isBulkRegister, setIsBulkRegister] = useState(false);
@@ -513,7 +513,7 @@ export default function CreatePurchase() {
     albumMembers.length > 0 && selectedMemberIds.length === albumMembers.length;
 
   const selectClass = "cp-select";
-  const inputClass = "cp-input-full";
+  // const inputClass = "cp-input-full";
 
 
 
