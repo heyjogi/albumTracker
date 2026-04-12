@@ -28,7 +28,7 @@ function saveToStorage(data) {
 }
 
 // 보드 구조(앨범/카드 리스트) 캐시 유틸 (localStorage 사용 + 1시간 TTL)
-const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v3'
+const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v4'
 const CACHE_TTL = 2 * 60 * 60 * 1000 // 2시간으로 연장 (트래픽 최적화)
 
 function loadStructureFromCache() {
@@ -433,7 +433,12 @@ export default function PocaBoard() {
         const storeToCreatedAtMap = {}
         const groupedMigongpo = {}
           ; (migongpoRaw || [])
-            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+            .sort((a, b) => {
+              const timeA = new Date(a.safe_store_albums?.created_at || 0).getTime()
+              const timeB = new Date(b.safe_store_albums?.created_at || 0).getTime()
+              if (timeA !== timeB) return timeA - timeB
+              return (a.sort_order || 0) - (b.sort_order || 0)
+            })
             .forEach(item => {
               const groupName = item.safe_store_albums?.safe_stores?.name || '미지정'
 
@@ -441,13 +446,16 @@ export default function PocaBoard() {
                 storeToAlbumMap[groupName] = item.album_id
                 storeToCreatedAtMap[groupName] = item.safe_store_albums?.created_at || ''
               }
-              if (storeToAlbumMap[groupName] !== item.album_id) {
-                return
-              }
 
               if (!groupedMigongpo[groupName]) {
                 groupedMigongpo[groupName] = []
               }
+
+              if (groupName.includes('더현대') || groupName.includes('십카페')) {
+                const isDuplicate = groupedMigongpo[groupName].some(c => c.name === item.member_name)
+                if (isDuplicate) return
+              }
+
               groupedMigongpo[groupName].push({
                 id: item.id,
                 name: item.member_name,
