@@ -6,7 +6,6 @@ import { getCardLayout } from '../utils/cardLayout'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 
 // localStorage 유틸
@@ -62,7 +61,7 @@ function saveStructureToCache(data) {
   }
 }
 
-// 로컬 서빙 경로 생성 (파일명이 이미 .webp로 수정됨)
+// 로컬 서빙 경로 생성
 function getImageUrl(imagePath, type = 'album') {
   if (!imagePath) return null
   const localDir = type === 'pob' ? '/image/pob' : '/image/album'
@@ -89,13 +88,33 @@ function transformData(dbData) {
           })
         })
 
+    let groups = Object.entries(grouped).map(([name, cards]) => ({
+      name,
+      cards
+    }))
+
+    if (type.type_name === 'POCAALBUM') {
+      const explicitOrder = [
+        'ENVELOPE', '폴라로이드', '투명 A', '투명 B', 'QR A', 'QR B',
+        '드로잉', '단체', '셀프두들 A', '셀프두들 B', '카드 스티커',
+        'BACK SHOT', '므미메무', '유닛'
+      ];
+
+      groups.sort((a, b) => {
+        let indexA = explicitOrder.indexOf(a.name);
+        let indexB = explicitOrder.indexOf(b.name);
+
+        if (indexA === -1) indexA = 999;
+        if (indexB === -1) indexB = 999;
+
+        return indexA - indexB;
+      });
+    }
+
     return {
       id: type.id,
       name: type.type_name,
-      groups: Object.entries(grouped).map(([name, cards]) => ({
-        name,
-        cards
-      }))
+      groups
     }
   })
 }
@@ -252,6 +271,25 @@ function ExportModal({ onClose, onExport, albumVersions }) {
 }
 
 
+function HowToUseModal({ onClose }) {
+  return (
+    <div className="modal-backdrop modal-backdrop--top" onClick={onClose}>
+      <div className="modal-box how-to-use-modal" onClick={e => e.stopPropagation()}>
+        <div className="how-to-use-modal__header">
+          <h3 className="modal-title">이용 안내</h3>
+          <button className="how-to-use-modal__close" onClick={onClose}>&times;</button>
+        </div>
+        <div className="how-to-use-modal__content">
+          <img
+            src="image/how-to-use.webp"
+            alt="사용법"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ✅ UI 전용 컴포넌트 (HTML 분리)
 function PocaBoardView(props) {
   const {
@@ -269,13 +307,21 @@ function PocaBoardView(props) {
     setModal,
     handleModalSave,
     exportModal,
-    setExportModal
+    setExportModal,
+    howToUseModal,
+    setHowToUseModal
   } = props
 
   return (
     <div className="poca-wrapper">
       <header className="poca-header">
-        <button onClick={() => navigate('/')}>←</button>
+        <div className="poca-header__nav">
+          <button onClick={() => navigate('/')}>←</button>
+          <button
+            className="how-to-use-btn"
+            onClick={() => setHowToUseModal(true)}
+          >?</button>
+        </div>
         <h1>Caligo pt.2</h1>
         <div className="poca-header__actions">
           <button
@@ -355,6 +401,10 @@ function PocaBoardView(props) {
           onExport={handleExport}
         />
       )}
+
+      {howToUseModal && (
+        <HowToUseModal onClose={() => setHowToUseModal(false)} />
+      )}
     </div >
   )
 }
@@ -370,6 +420,7 @@ export default function PocaBoard() {
   const [cardCounts, setCardCounts] = useState(() => loadFromStorage())
   const [modal, setModal] = useState(null)
   const [exportModal, setExportModal] = useState(false)
+  const [howToUseModal, setHowToUseModal] = useState(false)
   const [activeTab, setActiveTab] = useState(() => {
     const cached = loadStructureFromCache()
     return cached && cached.length > 0 ? cached[0].id : null
@@ -564,11 +615,6 @@ export default function PocaBoard() {
 
   const activeVersion = albumVersions.find(v => v.id === activeTab)
 
-  const activeCards = activeVersion?.cards || []
-  const totalCards = activeCards.length
-  const ownedCards = activeCards.filter(c => (cardCounts[c.id] || 0) > 0).length
-  const dupCards = activeCards.filter(c => (cardCounts[c.id] || 0) > 1).length
-
   if (loading) {
     return (
       <div className="poca-loading-full">
@@ -597,6 +643,8 @@ export default function PocaBoard() {
       handleModalSave={handleModalSave}
       exportModal={exportModal}
       setExportModal={setExportModal}
+      howToUseModal={howToUseModal}
+      setHowToUseModal={setHowToUseModal}
     />
   )
 }

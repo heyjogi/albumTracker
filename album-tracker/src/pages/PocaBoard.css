@@ -11,8 +11,12 @@
   grid-template-columns: 1fr auto 1fr;
 }
 
-.poca-header button:first-child {
-  @apply justify-self-start text-slate-400 hover:text-brand-500;
+.poca-header__nav {
+  @apply justify-self-start flex items-center gap-2;
+}
+
+.poca-header__nav>button:first-child {
+  @apply text-slate-400 hover:text-brand-500;
 }
 
 .poca-header h1 {
@@ -59,7 +63,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /*  전체 화면 로딩  */
@@ -253,4 +259,37 @@
 
 .modal-actions button:last-child {
   @apply bg-brand-500 text-black;
+}
+
+/* 이용 안내 버튼 및 모달 */
+.how-to-use-btn {
+  @apply flex items-center justify-center w-[20px] h-[20px] rounded-full border border-slate-600 text-slate-400 bg-transparent hover:border-brand-500 hover:text-brand-500 hover:bg-brand-500/10 transition-colors text-[11px] font-bold leading-none cursor-pointer;
+}
+
+.modal-backdrop--top {
+  @apply z-[9999];
+}
+
+.how-to-use-modal {
+  @apply w-[90%] max-w-[400px] p-5 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl;
+}
+
+.how-to-use-modal__header {
+  @apply flex justify-between items-center mb-4;
+}
+
+.how-to-use-modal__header .modal-title {
+  @apply m-0 text-base font-bold text-brand-500 tracking-wide;
+}
+
+.how-to-use-modal__close {
+  @apply text-brand-500 text-2xl leading-none cursor-pointer bg-transparent border-none hover:text-brand-400 hover:scale-110 transition-transform p-0 m-0 flex items-center justify-center w-6 h-6;
+}
+
+.how-to-use-modal__content {
+  @apply w-full rounded-lg overflow-hidden border border-slate-800 bg-slate-950;
+}
+
+.how-to-use-modal__content img {
+  @apply w-full h-auto block opacity-90;
 }
