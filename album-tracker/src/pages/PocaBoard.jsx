@@ -88,13 +88,33 @@ function transformData(dbData) {
           })
         })
 
+    let groups = Object.entries(grouped).map(([name, cards]) => ({
+      name,
+      cards
+    }))
+
+    if (type.type_name === 'POCAALBUM') {
+      const explicitOrder = [
+        'ENVELOPE', '폴라로이드', '투명 A', '투명 B', 'QR A', 'QR B',
+        '드로잉', '단체', '셀프두들 A', '셀프두들 B', '카드 스티커',
+        'BACK SHOT', '므미메무', '유닛'
+      ];
+
+      groups.sort((a, b) => {
+        let indexA = explicitOrder.indexOf(a.name);
+        let indexB = explicitOrder.indexOf(b.name);
+
+        if (indexA === -1) indexA = 999;
+        if (indexB === -1) indexB = 999;
+
+        return indexA - indexB;
+      });
+    }
+
     return {
       id: type.id,
       name: type.type_name,
-      groups: Object.entries(grouped).map(([name, cards]) => ({
-        name,
-        cards
-      }))
+      groups
     }
   })
 }

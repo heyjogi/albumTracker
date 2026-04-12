@@ -60,7 +60,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
 
     if (groupsToExport.length === 0) continue
 
-    const MAX_GROUPS_PER_COLUMN = version.name === '미공포' ? 6 : 7;
+    const MAX_GROUPS_PER_COLUMN = version.name === 'POCAALBUM' ? 8 : (version.name === '미공포' ? 6 : 7);
     const chunkedGroups = [];
     for (let i = 0; i < groupsToExport.length; i += MAX_GROUPS_PER_COLUMN) {
       chunkedGroups.push(groupsToExport.slice(i, i + MAX_GROUPS_PER_COLUMN));

@@ -15,7 +15,7 @@
   @apply justify-self-start flex items-center gap-2;
 }
 
-.poca-header__nav > button:first-child {
+.poca-header__nav>button:first-child {
   @apply text-slate-400 hover:text-brand-500;
 }
 
@@ -63,7 +63,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /*  전체 화면 로딩  */
