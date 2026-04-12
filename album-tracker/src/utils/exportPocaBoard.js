@@ -60,7 +60,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
 
     if (groupsToExport.length === 0) continue
 
-    const MAX_GROUPS_PER_COLUMN = 7;
+    const MAX_GROUPS_PER_COLUMN = version.name === '미공포' ? 6 : 7;
     const chunkedGroups = [];
     for (let i = 0; i < groupsToExport.length; i += MAX_GROUPS_PER_COLUMN) {
       chunkedGroups.push(groupsToExport.slice(i, i + MAX_GROUPS_PER_COLUMN));
@@ -139,7 +139,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
           const isSquare = layout === CARD_LAYOUTS.SQUARE
           const isPhoto = layout === CARD_LAYOUTS.PHOTO
           const isSeal = layout === CARD_LAYOUTS.SEAL
-          
+
           const cardWidth = isHorizontal ? 102 : 66
           let cardHeight = 102
           if (isHorizontal) cardHeight = 66
@@ -183,7 +183,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
             img.src = card.image
             img.crossOrigin = 'anonymous'
             img.style.cssText = `width: 100%; height: 100%; object-fit: cover; display: block;`
-            
+
             cardInner.appendChild(img)
           }
 
@@ -283,7 +283,7 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
     Promise.all(loadPromises),
     new Promise(res => setTimeout(res, 30000))
   ])
-  
+
   await document.fonts.ready
 
   try {
