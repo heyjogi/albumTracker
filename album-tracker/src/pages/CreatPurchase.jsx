@@ -29,7 +29,6 @@ export default function CreatePurchase() {
   const [teams, setTeams] = useState([]);
   const [albums, setAlbums] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
-  // const [allTeamMembers, setAllTeamMembers] = useState([]);
   const [albumMembers, setAlbumMembers] = useState([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
   const [isBulkRegister, setIsBulkRegister] = useState(false);
@@ -153,6 +152,11 @@ export default function CreatePurchase() {
         return false;
       }
       return true;
+    }).sort((a, b) => {
+      const domA = a.is_domestic ? 0 : 1;
+      const domB = b.is_domestic ? 0 : 1;
+      if (domA !== domB) return domA - domB;
+      return a.name.localeCompare(b.name);
     });
 
     setStores(activeStores || []);
