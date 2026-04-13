@@ -505,7 +505,7 @@ export default function PocaBoard() {
                 groupedMigongpo[groupName] = []
               }
 
-              if (groupName.includes('더현대') || groupName.includes('십카페')) {
+              if (groupName.includes('더현대') || groupName.includes('십카페') || groupName.includes('유튜브 쇼핑')) {
                 const isDuplicate = groupedMigongpo[groupName].some(c => c.name === item.member_name)
                 if (isDuplicate) return
               }
