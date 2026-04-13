@@ -27,7 +27,7 @@ function saveToStorage(data) {
 }
 
 // 보드 구조(앨범/카드 리스트) 캐시 유틸 (localStorage 사용 + 1시간 TTL)
-const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v4'
+const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v5'
 const CACHE_TTL = 2 * 60 * 60 * 1000 // 2시간으로 연장 (트래픽 최적화)
 
 function loadStructureFromCache() {
@@ -473,7 +473,8 @@ export default function PocaBoard() {
             safe_store_albums (
               created_at,
               safe_stores (
-                name
+                name,
+                is_domestic
               )
             )
           `)
@@ -482,6 +483,7 @@ export default function PocaBoard() {
 
         const storeToAlbumMap = {}
         const storeToCreatedAtMap = {}
+        const storeToDomesticMap = {}
         const groupedMigongpo = {}
           ; (migongpoRaw || [])
             .sort((a, b) => {
@@ -496,6 +498,7 @@ export default function PocaBoard() {
               if (!storeToAlbumMap[groupName]) {
                 storeToAlbumMap[groupName] = item.album_id
                 storeToCreatedAtMap[groupName] = item.safe_store_albums?.created_at || ''
+                storeToDomesticMap[groupName] = item.safe_store_albums?.safe_stores?.is_domestic ?? true
               }
 
               if (!groupedMigongpo[groupName]) {
@@ -521,6 +524,9 @@ export default function PocaBoard() {
             name,
             cards
           })).sort((a, b) => {
+            const domA = storeToDomesticMap[a.name] ? 0 : 1
+            const domB = storeToDomesticMap[b.name] ? 0 : 1
+            if (domA !== domB) return domA - domB
             const timeA = new Date(storeToCreatedAtMap[a.name] || 0).getTime()
             const timeB = new Date(storeToCreatedAtMap[b.name] || 0).getTime()
             return timeA - timeB
