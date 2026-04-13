@@ -517,7 +517,7 @@ export default function CreatePurchase() {
     albumMembers.length > 0 && selectedMemberIds.length === albumMembers.length;
 
   const selectClass = "cp-select";
-  const inputClass = "cp-input-full";
+  // const inputClass = "cp-input-full";
 
 
 
