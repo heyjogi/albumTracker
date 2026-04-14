@@ -139,12 +139,13 @@ export async function exportPocaBoardImage(albumVersions, cardCounts, filename =
           const isSquare = layout === CARD_LAYOUTS.SQUARE
           const isPhoto = layout === CARD_LAYOUTS.PHOTO
           const isSeal = layout === CARD_LAYOUTS.SEAL
+          const isIdPhoto = layout === CARD_LAYOUTS.IDPHOTO
 
           const cardWidth = isHorizontal ? 102 : 66
           let cardHeight = 102
           if (isHorizontal) cardHeight = 66
           else if (isSquare) cardHeight = 66
-          else if (isPhoto) cardHeight = 88 // 3:4 비율
+          else if (isPhoto || isIdPhoto) cardHeight = 88 // 3:4 비율
           else if (isSeal) cardHeight = 83  // 4:5 비율
 
           const cardWrapper = document.createElement('div')

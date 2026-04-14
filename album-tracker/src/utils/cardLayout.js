@@ -4,6 +4,7 @@ export const CARD_LAYOUTS = {
   SQUARE: 'square',     // 1:1
   PHOTO: 'photo',         // 4:6
   SEAL: 'seal',         // 4:5
+  IDPHOTO: 'idphoto',     // 3:4
 };
 
 const LAYOUT_CONFIG = {
@@ -20,7 +21,9 @@ const LAYOUT_CONFIG = {
   },
   'ID PASS': {
     '띠부씰 A': CARD_LAYOUTS.SEAL,
-    '띠부씰 B': CARD_LAYOUTS.SEAL
+    '띠부씰 B': CARD_LAYOUTS.SEAL,
+    'ID PHOTO': CARD_LAYOUTS.IDPHOTO,
+    'ID PASS CARD': CARD_LAYOUTS.HORIZONTAL
   }
 };
 

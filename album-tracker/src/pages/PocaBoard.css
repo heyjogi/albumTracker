@@ -163,6 +163,10 @@
   aspect-ratio: 3 / 4;
 }
 
+.poca-card--idphoto .poca-card__inner {
+  aspect-ratio: 3 / 4;
+}
+
 .poca-card--seal .poca-card__inner {
   aspect-ratio: 4 / 5;
 }
