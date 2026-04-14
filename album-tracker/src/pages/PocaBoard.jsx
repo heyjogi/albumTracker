@@ -493,7 +493,11 @@ export default function PocaBoard() {
               return (a.sort_order || 0) - (b.sort_order || 0)
             })
             .forEach(item => {
-              const groupName = item.safe_store_albums?.safe_stores?.name || '미지정'
+              let groupName = item.safe_store_albums?.safe_stores?.name || '미지정'
+
+              if (groupName === 'Musinsa 2차' || groupName === '십카페') {
+                groupName = 'Musinsa 2차 & 십카페'
+              }
 
               if (!storeToAlbumMap[groupName]) {
                 storeToAlbumMap[groupName] = item.album_id
