@@ -5,6 +5,7 @@ export const CARD_LAYOUTS = {
   PHOTO: 'photo',         // 4:6
   SEAL: 'seal',         // 4:5
   IDPHOTO: 'idphoto',     // 3:4
+  KEYRING: 'keyring', // 3:7
 };
 
 const LAYOUT_CONFIG = {
@@ -17,7 +18,9 @@ const LAYOUT_CONFIG = {
     '아스테룸 패치': CARD_LAYOUTS.SQUARE
   },
   'INVENTORY': {
-    '핀뱃지': CARD_LAYOUTS.SQUARE
+    '핀뱃지': CARD_LAYOUTS.SQUARE,
+    '아크릴참 A': CARD_LAYOUTS.KEYRING,
+    '아크릴참 B': CARD_LAYOUTS.KEYRING
   },
   'ID PASS': {
     '띠부씰 A': CARD_LAYOUTS.SEAL,

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { exportPocaBoardImage } from '../utils/exportPocaBoard'
-import { getCardLayout } from '../utils/cardLayout'
+import { getCardLayout, CARD_LAYOUTS } from '../utils/cardLayout'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
@@ -27,7 +27,7 @@ function saveToStorage(data) {
 }
 
 // 보드 구조(앨범/카드 리스트) 캐시 유틸 (localStorage 사용 + 1시간 TTL)
-const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v8'
+const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v9'
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24시간으로 연장 (트래픽 최적화)
 
 function loadStructureFromCache() {
@@ -341,7 +341,7 @@ function PocaBoardView(props) {
       <div className="poca-grid-area">
         {activeVersion?.groups.map(group => {
           const isGroupHorizontal = group.cards.some(card =>
-            getCardLayout(activeVersion?.name, group.name, card.name) === 'horizontal'
+            getCardLayout(activeVersion?.name, group.name, card.name) === CARD_LAYOUTS.HORIZONTAL
           )
           return (
             <div key={group.name} className="poca-group">
