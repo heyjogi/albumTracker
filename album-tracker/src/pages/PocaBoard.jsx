@@ -27,7 +27,7 @@ function saveToStorage(data) {
 }
 
 // 보드 구조(앨범/카드 리스트) 캐시 유틸 (localStorage 사용 + 1시간 TTL)
-const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v6'
+const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v7'
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24시간으로 연장 (트래픽 최적화)
 
 function loadStructureFromCache() {
@@ -108,6 +108,14 @@ function transformData(dbData) {
         if (indexB === -1) indexB = 999;
 
         return indexA - indexB;
+      });
+    }
+
+    if (type.type_name === 'ID PASS') {
+      groups.sort((a, b) => {
+        if (a.name === '앨범 커버') return -1;
+        if (b.name === '앨범 커버') return 1;
+        return 0;
       });
     }
 
