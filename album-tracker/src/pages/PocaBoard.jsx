@@ -339,31 +339,38 @@ function PocaBoardView(props) {
       </div>
 
       <div className="poca-grid-area">
-        {activeVersion?.groups.map(group => {
-          const isGroupHorizontal = group.cards.some(card =>
-            getCardLayout(activeVersion?.name, group.name, card.name) === CARD_LAYOUTS.HORIZONTAL
-          )
-          return (
-            <div key={group.name} className="poca-group">
-              <h3 className="poca-group-title">{group.name}</h3>
+        {albumVersions.map(ver => (
+          <div
+            key={ver.id}
+            className={activeTab === ver.id ? '' : 'poca-tab-content--hidden'}
+          >
+            {ver.groups.map(group => {
+              const isGroupHorizontal = group.cards.some(card =>
+                getCardLayout(ver.name, group.name, card.name) === CARD_LAYOUTS.HORIZONTAL
+              )
+              return (
+                <div key={group.name} className="poca-group">
+                  <h3 className="poca-group-title">{group.name}</h3>
 
-              <div className={`poca-grid ${isGroupHorizontal ? 'poca-grid--horizontal' : ''}`}>
-                {group.cards.map(card => {
-                  const cardLayout = getCardLayout(activeVersion?.name, group.name, card.name)
-                  return (
-                    <PocaCard
-                      key={card.id}
-                      card={card}
-                      count={cardCounts[card.id] || 0}
-                      onClick={handleCardClick}
-                      layout={cardLayout}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-          )
-        })}
+                  <div className={`poca-grid ${isGroupHorizontal ? 'poca-grid--horizontal' : ''}`}>
+                    {group.cards.map(card => {
+                      const cardLayout = getCardLayout(ver.name, group.name, card.name)
+                      return (
+                        <PocaCard
+                          key={card.id}
+                          card={card}
+                          count={cardCounts[card.id] || 0}
+                          onClick={handleCardClick}
+                          layout={cardLayout}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ))}
       </div>
 
       {
