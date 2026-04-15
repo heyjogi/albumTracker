@@ -137,9 +137,14 @@
   transition: transform 0.2s;
 }
 
-/* 3열 그리드(가로형 그룹) 내에서 세로 카드가 너무 커지지 않도록 비율(55/85)만큼 너비 제한 */
 .poca-grid--horizontal .poca-card:not(.poca-card--horizontal) {
   width: 64.7%;
+}
+
+/* 키링(3:7)은 높이가 일반 세로 카드와 같도록 너비를 조절 */
+.poca-card--keyring {
+  width: 66.2%;
+  justify-self: center;
 }
 
 .poca-card:hover {
@@ -169,6 +174,10 @@
 
 .poca-card--seal .poca-card__inner {
   aspect-ratio: 4 / 5;
+}
+
+.poca-card--keyring .poca-card__inner {
+  aspect-ratio: 3 / 7;
 }
 
 .poca-card:active .poca-card__inner {
