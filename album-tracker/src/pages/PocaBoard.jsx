@@ -27,7 +27,7 @@ function saveToStorage(data) {
 }
 
 // 보드 구조(앨범/카드 리스트) 캐시 유틸 (localStorage 사용 + 1시간 TTL)
-const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v7'
+const STRUCTURE_CACHE_KEY = 'pocaboard_structure_v8'
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24시간으로 연장 (트래픽 최적화)
 
 function loadStructureFromCache() {
@@ -71,6 +71,7 @@ function getImageUrl(imagePath, type = 'album') {
 function transformData(dbData) {
   return dbData.map(type => {
     const grouped = {}
+    const groupSortOrderMap = {}
 
       ; (type.poca_components || [])
         .sort((a, b) => a.sort_order - b.sort_order)
@@ -79,6 +80,7 @@ function transformData(dbData) {
 
           if (!grouped[groupKey]) {
             grouped[groupKey] = []
+            groupSortOrderMap[groupKey] = comp.group_sort_order ?? 999
           }
 
           grouped[groupKey].push({
@@ -88,36 +90,9 @@ function transformData(dbData) {
           })
         })
 
-    let groups = Object.entries(grouped).map(([name, cards]) => ({
-      name,
-      cards
-    }))
-
-    if (type.type_name === 'POCAALBUM') {
-      const explicitOrder = [
-        'ENVELOPE', '폴라로이드', '투명 A', '투명 B', 'QR A', 'QR B',
-        '드로잉', '단체', '셀프두들 A', '셀프두들 B', '카드 스티커',
-        'BACK SHOT', '므미메무', '유닛'
-      ];
-
-      groups.sort((a, b) => {
-        let indexA = explicitOrder.indexOf(a.name);
-        let indexB = explicitOrder.indexOf(b.name);
-
-        if (indexA === -1) indexA = 999;
-        if (indexB === -1) indexB = 999;
-
-        return indexA - indexB;
-      });
-    }
-
-    if (type.type_name === 'ID PASS') {
-      groups.sort((a, b) => {
-        if (a.name === '앨범 커버') return -1;
-        if (b.name === '앨범 커버') return 1;
-        return 0;
-      });
-    }
+    const groups = Object.entries(grouped)
+      .map(([name, cards]) => ({ name, cards }))
+      .sort((a, b) => (groupSortOrderMap[a.name] ?? 999) - (groupSortOrderMap[b.name] ?? 999))
 
     return {
       id: type.id,
@@ -460,6 +435,7 @@ export default function PocaBoard() {
               component_name,
               image_path,
               sort_order,
+              group_sort_order,
               member_id,
               member_names (member_name)
             )
