@@ -37,7 +37,6 @@ function App() {
           </AuthWrapper>
         </div>
       </BrowserRouter>
-      <SpeedInsights />
       <Analytics />
     </AuthProvider>
   )
