@@ -17,6 +17,7 @@ export default function Main() {
         const { data } = await supabase
             .from('purchases')
             .select('*')
+            .eq('user_id', user.id) // 내 구매 내역만 필터링
             .order('created_at', { ascending: false })
 
         setList(data || [])

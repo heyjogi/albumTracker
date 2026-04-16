@@ -1,0 +1,114 @@
+@reference "../index.css";
+
+.matrix-container {
+  @apply mb-6 space-y-6;
+}
+
+.matrix-section {
+  @apply bg-white border border-slate-100 rounded-2xl p-4 overflow-hidden;
+}
+
+.matrix-header-row {
+  @apply flex items-end justify-between mb-4;
+}
+
+.matrix-title {
+  @apply text-xs font-bold text-slate-400 uppercase tracking-wider mb-0;
+}
+
+.matrix-subtitle {
+  @apply text-[10px] text-slate-300 font-medium;
+}
+
+.matrix-scroll {
+  @apply overflow-x-auto -mx-4 px-4;
+}
+
+.matrix-table {
+  @apply w-full border-collapse text-[11px];
+}
+
+.matrix-table th {
+  @apply bg-slate-50 text-slate-500 font-bold p-2 border border-slate-100;
+}
+
+.matrix-table td {
+  @apply p-2 border border-slate-100 text-center;
+}
+
+.matrix-table .sticky-col {
+  @apply sticky left-0 bg-white z-10 border-r-2 border-slate-100 min-w-[80px] text-left;
+}
+
+.matrix-table th.sticky-col {
+  @apply bg-slate-50;
+}
+
+.matrix-cell {
+  @apply min-w-[50px];
+}
+
+.matrix-dots-container {
+  @apply flex flex-wrap justify-center gap-1 min-h-[20px];
+}
+
+.matrix-dot-wrap {
+  @apply flex flex-col items-center;
+}
+
+.matrix-dot {
+  @apply w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0;
+}
+
+.dot-yejun {
+  @apply bg-[#DBEAFE] text-[#1E40AF];
+}
+
+.dot-noah {
+  @apply bg-[#F3E8FF] text-[#6B21A8];
+}
+
+.dot-bamby {
+  @apply bg-[#FCE7F3] text-[#9D174D];
+}
+
+.dot-eunho {
+  @apply bg-[#FEE2E2] text-[#991B1B];
+}
+
+.dot-hamin {
+  @apply bg-[#DCFCE7] text-[#166534];
+}
+
+.dot-empty {
+  @apply w-5 h-5 rounded-full bg-slate-50 border border-dashed border-slate-200 mx-auto;
+}
+
+.matrix-qty {
+  @apply text-[9px] text-slate-400;
+}
+
+/* 수량 테이블 */
+.cnt-table {
+  @apply w-full border-collapse text-[11px];
+}
+
+.cnt-table th {
+  @apply bg-slate-50 text-slate-500 font-bold p-2 border border-slate-100;
+}
+
+.cnt-table td {
+  @apply p-2 border border-slate-100 text-center text-slate-700;
+}
+
+.cnt-table .member-name {
+  @apply text-left font-bold text-slate-400;
+}
+
+.cnt-hi {
+  @apply text-[#3C3489] font-bold;
+}
+
+.row-total {
+  @apply font-bold text-slate-800;
+}

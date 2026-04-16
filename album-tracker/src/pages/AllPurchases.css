@@ -53,3 +53,30 @@
   margin: 0 auto;
   width: 100%;
 }
+
+/* 탭 스타일 */
+.ap-tabs {
+  @apply bg-white border-b border-slate-50 sticky top-20 z-40;
+}
+
+.ap-tab-row {
+  @apply flex gap-2 p-3 overflow-x-auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.ap-tab-row::-webkit-scrollbar {
+  display: none;
+}
+
+.ap-tab {
+  @apply px-4 py-1.5 rounded-full text-xs font-bold border border-slate-100 bg-slate-50 text-slate-400 transition-all whitespace-nowrap;
+}
+
+.ap-tab.active {
+  @apply bg-brand-950 text-slate-400 border-brand-950;
+}
+
+.ap-list-title {
+  @apply text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 mt-6;
+}
