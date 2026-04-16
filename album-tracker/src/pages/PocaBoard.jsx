@@ -6,6 +6,7 @@ import { getCardLayout, CARD_LAYOUTS } from '../utils/cardLayout'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
+const IMAGE_VERSION = '0416' // 이미지 캐시 버스팅을 위한 버전
 
 
 // localStorage 유틸
@@ -65,7 +66,8 @@ function saveStructureToCache(data) {
 function getImageUrl(imagePath, type = 'album') {
   if (!imagePath) return null
   const localDir = type === 'pob' ? '/image/pob' : '/image/album'
-  return `${localDir}/${imagePath.split('/').pop()}`
+  const filename = imagePath.split('/').pop()
+  return `${localDir}/${filename}?v=${IMAGE_VERSION}`
 }
 
 function transformData(dbData) {
