@@ -93,6 +93,27 @@ export default function PurchaseItem({ item, refresh }) {
     }
   };
 
+  const handleCoverSelect = async (label) => {
+    const idToUpdate = item.id;
+    if (!idToUpdate) return;
+    setLoading(true);
+    try {
+      // 사용자의 요청에 따라 한번 더 누르면 취소(null)되도록 함
+      const newLabel = label === item.cover_label ? null : label;
+      const updateData = { cover_label: newLabel };
+
+      await supabase
+        .from("purchases")
+        .update(updateData)
+        .eq("id", idToUpdate);
+      refresh();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!confirmDelete) {
       setConfirmDelete(true);
@@ -198,6 +219,28 @@ export default function PurchaseItem({ item, refresh }) {
               </span>
             </div>
           )}
+
+          {/* 커버 선택 칩 */}
+          <div className="pi-cover-section">
+            <div className="pi-cover-label">커버</div>
+            <div className="pi-cover-row">
+              {["💙", "💜", "💗", "❤️", "🖤"].map((label) => (
+                <button
+                  key={label}
+                  disabled={loading}
+                  onClick={() => handleCoverSelect(label)}
+                  className={`cover-chip cover-chip-${label === "💙" ? "yejun" :
+                      label === "💜" ? "noah" :
+                        label === "💗" ? "bamby" :
+                          label === "❤️" ? "eunho" :
+                            "hamin"
+                    } ${item.cover_label === label ? "cover-chip-sel" : ""}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
