@@ -215,3 +215,49 @@
 .pi-btn-cancel {
   @apply w-full mt-2 py-2 rounded-xl text-sm text-slate-400 hover:text-slate-600;
 }
+
+/* 커버 선택 UI */
+.pi-cover-section {
+  @apply mt-3 pt-3 border-t border-slate-50;
+}
+
+.pi-cover-label {
+  @apply text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5;
+}
+
+.pi-cover-row {
+  @apply flex items-center gap-1.5;
+}
+
+.cover-chip {
+  @apply px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all;
+  cursor: pointer;
+}
+
+.cover-chip-yejun {
+  @apply bg-[#DBEAFE] text-[#1E40AF] border-[#60A5FA];
+}
+
+.cover-chip-noah {
+  @apply bg-[#F3E8FF] text-[#6B21A8] border-[#C084FC];
+}
+
+.cover-chip-bamby {
+  @apply bg-[#FCE7F3] text-[#9D174D] border-[#F472B6];
+}
+
+.cover-chip-eunho {
+  @apply bg-[#FEE2E2] text-[#991B1B] border-[#F87171];
+}
+
+.cover-chip-hamin {
+  @apply bg-[#DCFCE7] text-[#166534] border-[#4ADE80];
+}
+
+.cover-chip-none {
+  @apply bg-slate-50 text-slate-400 border-slate-100;
+}
+
+.cover-chip-sel {
+  @apply ring-2 ring-brand-500 ring-offset-1 scale-105;
+}
