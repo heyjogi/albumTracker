@@ -6,7 +6,7 @@ import { getCardLayout, CARD_LAYOUTS } from '../utils/cardLayout'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
-const IMAGE_VERSION = '0416' // 이미지 캐시 버스팅을 위한 버전
+const IMAGE_VERSION = '0417' // 이미지 캐시 버스팅을 위한 버전
 
 
 // localStorage 유틸
