@@ -11,10 +11,10 @@ export const CARD_LAYOUTS = {
 const LAYOUT_CONFIG = {
   'PHOTOBOOK': {
     '포카 B': CARD_LAYOUTS.HORIZONTAL,
+    '북마크': CARD_LAYOUTS.KEYRING,
     '엽서': {
       '단체A': CARD_LAYOUTS.HORIZONTAL
     },
-    '4컷사진': CARD_LAYOUTS.PHOTO,
     '아스테룸 패치': CARD_LAYOUTS.SQUARE
   },
   'INVENTORY': {
