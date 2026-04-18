@@ -24,5 +24,58 @@
         }
       ]
     }
-  ]
+  ],
+  "firewall": {
+    "rules": [
+      {
+        "name": "Block AI crawlers",
+        "description": "GPTBot, Claude, Amazonbot 등 AI 크롤러 차단",
+        "conditionGroup": [
+          {
+            "conditions": [
+              {
+                "type": "user_agent",
+                "op": "re",
+                "value": "GPTBot|ChatGPT-User|Claude-Web|ClaudeBot|Amazonbot|anthropic-ai|cohere-ai|CCBot|Omgili|Omgilibot|facebookexternalhit|Applebot-Extended"
+              }
+            ]
+          }
+        ],
+        "action": "deny"
+      },
+      {
+        "name": "Block aggressive scrapers",
+        "description": "스크래퍼 및 헤드리스 브라우저 차단",
+        "conditionGroup": [
+          {
+            "conditions": [
+              {
+                "type": "user_agent",
+                "op": "re",
+                "value": "python-requests|Go-http-client|curl/|wget/|libwww-perl|Java/|okhttp|scrapy|MJ12bot|AhrefsBot|SemrushBot|DotBot|BLEXBot|DataForSeoBot"
+              }
+            ]
+          }
+        ],
+        "action": "deny"
+      },
+      {
+        "name": "Rate limit by IP",
+        "description": "동일 IP에서 과도한 요청 제한",
+        "conditionGroup": [
+          {
+            "conditions": [
+              {
+                "type": "rate_limit",
+                "op": "gt",
+                "value": "200",
+                "window": "60"
+              }
+            ]
+          }
+        ],
+        "action": "deny"
+      }
+    ]
+  }
 }
