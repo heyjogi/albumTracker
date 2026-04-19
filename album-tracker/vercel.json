@@ -24,5 +24,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 15
+    }
+  }
 }
