@@ -11,8 +11,6 @@ import Privacy from './pages/Privacy'
 import { AuthProvider } from './hooks/useAuth'
 import AuthWrapper from './components/AuthWrapper'
 
-import { Analytics } from '@vercel/analytics/react'
-
 function App() {
   return (
     <AuthProvider>
@@ -37,7 +35,6 @@ function App() {
           </AuthWrapper>
         </div>
       </BrowserRouter>
-      <Analytics />
     </AuthProvider>
   )
 }
