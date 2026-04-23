@@ -488,6 +488,11 @@ export default function PocaBoard() {
             .forEach(item => {
               let groupName = item.safe_store_albums?.safe_stores?.name || '미지정'
 
+              // 비트로드는 미공개 포카가 없으므로 제외
+              if (groupName === '비트로드') {
+                return
+              }
+
               if (groupName === 'Musinsa 2차' || groupName === '십카페') {
                 groupName = 'Musinsa 2차 & 십카페'
               }
