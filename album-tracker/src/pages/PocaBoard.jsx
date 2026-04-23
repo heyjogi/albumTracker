@@ -6,7 +6,7 @@ import { getCardLayout, CARD_LAYOUTS } from '../utils/cardLayout'
 import './PocaBoard.css'
 
 const STORAGE_KEY = 'pocaboard_v1'
-const IMAGE_VERSION = '0417' // 이미지 캐시 버스팅을 위한 버전
+const IMAGE_VERSION = '0424' // 이미지 캐시 버스팅을 위한 버전
 
 
 // localStorage 유틸
@@ -487,6 +487,11 @@ export default function PocaBoard() {
             })
             .forEach(item => {
               let groupName = item.safe_store_albums?.safe_stores?.name || '미지정'
+
+              // 비트로드는 미공개 포카가 없으므로 제외
+              if (groupName === '비트로드') {
+                return
+              }
 
               if (groupName === 'Musinsa 2차' || groupName === '십카페') {
                 groupName = 'Musinsa 2차 & 십카페'
